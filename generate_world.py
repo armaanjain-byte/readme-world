@@ -4,8 +4,6 @@ import yaml
 import re
 
 CONFIG_FILE = "world.config.yml"
-STATE_FILE = "state.json"
-OUTPUT_FILE = "world.svg"
 ASSETS_DIR = "assets"
 
 MOOD_ANIMATIONS = {
@@ -64,14 +62,7 @@ def load_config():
             return yaml.safe_load(f)
     return {}
 
-def load_state():
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE, "r") as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            pass
-    return {"weather": "clear", "pet": {"species": "cat", "mood": "happy"}}
+from state import load_state
 
 def get_weather_colors(weather):
     if weather == "clear":
@@ -376,9 +367,9 @@ def generate_svg():
         svg_close
     ])
 
-    with open(OUTPUT_FILE, "w") as f:
-        f.write(content)
-    print(f"Generated {OUTPUT_FILE} with weather: {weather}, character: {character}, mood: {mood}, biome: {biome}")
+    import artifact_manager
+    artifact_manager.save_world_svg(content)
+    print(f"Generated world.svg with weather: {weather}, character: {character}, mood: {mood}, biome: {biome}")
 
 if __name__ == "__main__":
     generate_svg()

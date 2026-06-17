@@ -1,6 +1,6 @@
 # Readme World
 
-![World](./world.svg)
+![World](output/world.svg)
 
 Use Issue #1 to interact with the pet.
 

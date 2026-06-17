@@ -3,6 +3,7 @@ import os
 import json
 from state import initialize_state, save_state
 from event_processor import process_comment
+import artifact_manager
 
 class TestEventProcessor(unittest.TestCase):
     def setUp(self):
@@ -17,13 +18,13 @@ class TestEventProcessor(unittest.TestCase):
         self.assertEqual(result["user"], "testuser")
         
         # Verify state mutated
-        with open("state.json", "r") as f:
+        with open(artifact_manager.STATE_FILE, "r") as f:
             state = json.load(f)
         self.assertEqual(state["recent_action"], "pet")
         self.assertEqual(state["recent_user"], "testuser")
         
         # Verify SVG generated
-        self.assertTrue(os.path.exists("world.svg"))
+        self.assertTrue(os.path.exists(artifact_manager.OUTPUT_SVG_FILE))
 
     def test_invalid_command_comment(self):
         result = process_comment("hello world", "testuser")
@@ -46,7 +47,7 @@ class TestEventProcessor(unittest.TestCase):
         self.assertEqual(result["command"], "weather")
         
         # Verify state mutated
-        with open("state.json", "r") as f:
+        with open(artifact_manager.STATE_FILE, "r") as f:
             state = json.load(f)
         self.assertEqual(state["weather"], "storm")
         

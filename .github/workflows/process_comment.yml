@@ -38,6 +38,22 @@ jobs:
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stash generated artifacts
+          cp output/state.json /tmp/state.json
+          cp output/world.svg /tmp/world.svg
+          
+          # Fetch and checkout output branch
+          git fetch origin output || true
+          git checkout output || git checkout --orphan output
+          
+          # Clear existing tracked files if it was an orphan branch to ensure clean history
+          git rm -rf . || true
+          
+          # Restore artifacts to the root of the output branch
+          cp /tmp/state.json ./state.json
+          cp /tmp/world.svg ./world.svg
+          
           git add state.json world.svg
-          git commit -m "Update world state and SVG from comment interaction"
-          git push
+          git commit -m "Update world state and SVG from comment interaction" || true
+          git push origin HEAD:output

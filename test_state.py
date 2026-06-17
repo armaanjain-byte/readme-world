@@ -1,14 +1,16 @@
 import unittest
 import os
 import json
+import artifact_manager
 from state import (
     load_state,
     save_state,
     initialize_state,
     update_random_world_state,
-    STATE_FILE,
     DEFAULT_STATE_FILE
 )
+
+STATE_FILE = artifact_manager.STATE_FILE
 
 class TestStateManagement(unittest.TestCase):
     def setUp(self):

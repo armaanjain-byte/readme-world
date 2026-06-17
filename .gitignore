@@ -5,3 +5,4 @@ assets/
 world.svg
 state.json
 world.config.yml
+output/

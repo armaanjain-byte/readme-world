@@ -6,6 +6,7 @@ from rate_limiter import check_rate_limits
 from state import initialize_state, save_state, load_state
 from command_parser import parse_and_execute
 from event_processor import process_comment
+import artifact_manager
 
 class TestSecurity(unittest.TestCase):
     def setUp(self):
@@ -36,7 +37,7 @@ class TestSecurity(unittest.TestCase):
 
     def test_state_recovery(self):
         # Write corrupted data
-        with open("state.json", "w") as f:
+        with open(artifact_manager.STATE_FILE, "w") as f:
             f.write("THIS IS NOT JSON")
             
         # load_state should safely recover using initialize_state
