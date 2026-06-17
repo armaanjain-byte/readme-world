@@ -136,12 +136,13 @@
 <rect x="0" y="0" width="780" height="90" fill="#000000" opacity="0.6" rx="5" />
 <text x="10" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Status</text>
 <text x="10" y="40" font-family="sans-serif" font-size="12" fill="#ffffff">Mood: Happy</text>
-<text x="10" y="55" font-family="sans-serif" font-size="12" fill="#ffffff">Friendship: 10</text>
+<text x="10" y="55" font-family="sans-serif" font-size="12" fill="#ffffff">Friendship: 20</text>
 <text x="10" y="70" font-family="sans-serif" font-size="12" fill="#ffffff">Energy: 100</text>
 <text x="10" y="85" font-family="sans-serif" font-size="12" fill="#ffffff">Hunger: 0</text>
 <text x="200" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Top Friends</text>
 <text x="200" y="40" font-family="sans-serif" font-size="12" fill="#ffffff">1. alice (2)</text>
+<text x="200" y="55" font-family="sans-serif" font-size="12" fill="#ffffff">2. armaanjain-byte (2)</text>
 <text x="450" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Recent Activity</text>
-<text x="450" y="40" font-family="sans-serif" font-size="12" fill="#ffd700">alice petted the cat</text>
+<text x="450" y="40" font-family="sans-serif" font-size="12" fill="#ffd700">armaanjain-byte petted the cat</text>
 </g>
 </svg>
