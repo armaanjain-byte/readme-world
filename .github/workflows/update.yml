@@ -81,11 +81,6 @@ jobs:
           git worktree add ./output-branch output
 
       # ── 6. Restore cached state.json from the output branch ─────────────────
-      #
-      # generate_world.py reads state.json at start-up to decide whether
-      # it needs to refresh weather data. Copying it here makes it available
-      # at the workspace root where the script expects it.
-      #
       - name: Restore state.json from output branch
         run: |
           if [ -f ./output-branch/state.json ]; then
@@ -103,7 +98,9 @@ jobs:
       - name: Copy outputs to output branch
         run: |
           cp world.svg   ./output-branch/world.svg
-          cp state.json  ./output-branch/state.json
+          if [ -f ./state.json ]; then
+            cp state.json ./output-branch/state.json
+          fi
 
       # ── 9. Commit & push to the output branch ───────────────────────────────
       - name: Commit and push outputs
