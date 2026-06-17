@@ -1,48 +1,42 @@
 <svg width="100%" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" image-rendering="pixelated">
 <defs>
-
-    <g id="cat" transform="scale(2)">
-        <rect x="0" y="8" width="12" height="6" fill="#f4a460"/>
-        <rect x="2" y="14" width="2" height="2" fill="#f4a460"/>
-        <rect x="8" y="14" width="2" height="2" fill="#f4a460"/>
-        <rect x="10" y="4" width="6" height="6" fill="#f4a460"/>
-        <rect x="10" y="2" width="2" height="2" fill="#f4a460"/>
-        <rect x="14" y="2" width="2" height="2" fill="#f4a460"/>
-    </g>
-    
-
-    <g id="dog" transform="scale(2)">
-        <rect x="2" y="8" width="14" height="6" fill="#c8a882"/>
-        <rect x="4" y="14" width="2" height="4" fill="#c8a882"/>
-        <rect x="12" y="14" width="2" height="4" fill="#c8a882"/>
-        <rect x="0" y="4" width="6" height="6" fill="#c8a882"/>
-        <rect x="0" y="2" width="2" height="4" fill="#8b6347"/>
-    </g>
-    
-
-    <g id="tree" transform="scale(3)">
-        <rect x="6" y="16" width="4" height="8" fill="#8B4513"/>
-        <rect x="2" y="8" width="12" height="8" fill="#228B22"/>
-        <rect x="4" y="4" width="8" height="4" fill="#228B22"/>
-        <rect x="6" y="0" width="4" height="4" fill="#228B22"/>
-    </g>
-    
-
-    <g id="cloud" transform="scale(2)">
-        <rect x="4" y="4" width="16" height="8" fill="#ffffff" opacity="0.8"/>
-        <rect x="8" y="0" width="8" height="4" fill="#ffffff" opacity="0.8"/>
-        <rect x="0" y="6" width="24" height="6" fill="#ffffff" opacity="0.8"/>
-    </g>
-    
+<g id="cat_happy" transform="scale(2)">
+    <rect x="0" y="8" width="12" height="6" fill="#f4a460"/>
+    <rect x="2" y="14" width="2" height="2" fill="#f4a460"/>
+    <rect x="8" y="14" width="2" height="2" fill="#f4a460"/>
+    <rect x="10" y="4" width="6" height="6" fill="#f4a460"/>
+    <rect x="10" y="2" width="2" height="2" fill="#f4a460"/>
+    <rect x="14" y="2" width="2" height="2" fill="#f4a460"/>
+    <rect x="0" y="4" width="2" height="4" fill="#f4a460"/> <!-- tail up -->
+</g>
+<g id="forest_tree" transform="scale(3)">
+    <rect x="6" y="16" width="4" height="8" fill="#8B4513"/>
+    <rect x="2" y="8" width="12" height="8" fill="#228B22"/>
+    <rect x="4" y="4" width="8" height="4" fill="#228B22"/>
+    <rect x="6" y="0" width="4" height="4" fill="#228B22"/>
+</g>
+<g id="weather_cloud" transform="scale(2)">
+    <rect x="4" y="4" width="16" height="8" fill="#ffffff" opacity="0.8"/>
+    <rect x="8" y="0" width="8" height="4" fill="#ffffff" opacity="0.8"/>
+    <rect x="0" y="6" width="24" height="6" fill="#ffffff" opacity="0.8"/>
+</g>
+<g id="ui_panel">
+    <rect x="0" y="0" width="220" height="80" fill="#000000" opacity="0.5" rx="5" />
+</g>
 </defs>
 <rect id="sky" x="0" y="0" width="800" height="300" fill="#87CEEB" />
 <rect id="ground" x="0" y="240" width="800" height="60" fill="#4a7c3f" />
 
-    <use href="#tree" x="80" y="168" />
-    <use href="#tree" x="350" y="168" />
-    <use href="#tree" x="650" y="168" />
-    
+        <use href="#forest_tree" x="80" y="168" />
+        <use href="#forest_tree" x="350" y="168" />
+        <use href="#forest_tree" x="650" y="168" />
+        
 
-<use href="#cat" x="200" y="210" />
-<use href="#dog" x="550" y="204" />
+<use href="#cat_happy" x="400" y="210" />
+<g id="ui" transform="translate(10, 10)">
+<use href="#ui_panel" x="0" y="0" />
+<text x="10" y="25" font-family="sans-serif" font-size="16" fill="#ffffff">Owner: Armaan</text>
+<text x="10" y="50" font-family="sans-serif" font-size="16" fill="#ffffff">Weather: clear</text>
+<text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: happy</text>
+</g>
 </svg>
