@@ -1,0 +1,133 @@
+name: Update readme-world
+
+on:
+  schedule:
+    # Runs every 30 minutes
+    - cron: "*/30 * * * *"
+  # Allow manual triggering from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate world.svg
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout the default branch (where config & scripts live) ────────
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history so we can push to a different branch later
+          fetch-depth: 0
+
+      # ── 2. Set up Python ────────────────────────────────────────────────────
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      # ── 3. Install dependencies ─────────────────────────────────────────────
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── 4. Ensure the output branch exists ─────────────────────────────────
+      #
+      # Strategy:
+      #   • Try to check out the existing "output" branch.
+      #   • If it doesn't exist, create it as an orphan branch with an
+      #     empty initial commit so subsequent steps have somewhere to push.
+      #   • Always check the branch out into a separate worktree directory
+      #     (./output-branch) so that the source-branch files are still
+      #     accessible at the workspace root.
+      #
+      - name: Ensure output branch exists
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check whether the remote output branch already exists
+          if git ls-remote --exit-code --heads origin output; then
+            echo "OUTPUT_BRANCH_EXISTS=true" >> "$GITHUB_ENV"
+          else
+            echo "OUTPUT_BRANCH_EXISTS=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Create orphan output branch (first run only)
+        if: env.OUTPUT_BRANCH_EXISTS == 'false'
+        run: |
+          # Save current HEAD so we can return to it
+          CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+
+          git checkout --orphan output
+          git rm -rf .
+          # Add a minimal placeholder so the branch has at least one commit
+          echo "# readme-world output branch" > README.md
+          echo "This branch is auto-managed by GitHub Actions. Do not edit manually." >> README.md
+          git add README.md
+          git commit -m "chore: initialise output branch"
+          git push origin output
+
+          # Return to the source branch
+          git checkout "$CURRENT_BRANCH"
+
+      # ── 5. Check out the output branch into a worktree ──────────────────────
+      - name: Check out output branch into worktree
+        run: |
+          git fetch origin output
+          git worktree add ./output-branch output
+
+      # ── 6. Restore cached state.json from the output branch ─────────────────
+      #
+      # generate_world.py reads state.json at start-up to decide whether
+      # it needs to refresh weather data. Copying it here makes it available
+      # at the workspace root where the script expects it.
+      #
+      - name: Restore state.json from output branch
+        run: |
+          if [ -f ./output-branch/state.json ]; then
+            cp ./output-branch/state.json ./state.json
+            echo "Restored existing state.json"
+          else
+            echo "No existing state.json — will create fresh."
+          fi
+
+      # ── 7. Run the generator ────────────────────────────────────────────────
+      - name: Generate world.svg and update state.json
+        run: python generate_world.py
+
+      # ── 8. Copy outputs into the output branch worktree ─────────────────────
+      - name: Copy outputs to output branch
+        run: |
+          cp world.svg   ./output-branch/world.svg
+          cp state.json  ./output-branch/state.json
+
+      # ── 9. Commit & push to the output branch ───────────────────────────────
+      - name: Commit and push outputs
+        working-directory: ./output-branch
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add world.svg state.json
+
+          # Only commit if there is something new to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit — skipping."
+          else
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            git commit -m "chore(world): update world.svg [${TIMESTAMP}]"
+            git push origin output
+          fi
+
+      # ── 10. Purge Camo / GitHub image proxy cache ───────────────────────────
+      #
+      # GitHub proxies raw.githubusercontent.com images through Camo.
+      # Without a cache purge the README would keep showing the old SVG
+      # for up to an hour. This action sends a purge request automatically.
+      #
+      - name: Purge Camo image cache
+        uses: kevincobain2000/action-camo-purge@v1

@@ -1,0 +1,17 @@
+# readme-world configuration
+# Edit these values manually or run: python setup.py
+
+character: cat          # Pixel-art character (currently only "cat" is supported)
+biome: forest           # World biome: forest | desert | snow | beach
+name: Armaan            # Your name — shown in the SVG greeting
+
+weather: real           # "real" = fetch from Open-Meteo | "static" = always clear
+
+# Geographic coordinates (used for timezone + sunrise/sunset)
+latitude: 21.2514
+longitude: 81.6296
+timezone: Asia/Kolkata  # IANA timezone string
+
+# How many hours between live weather API refreshes.
+# Between refreshes the last cached state.json value is used.
+weather_update_hours: 3

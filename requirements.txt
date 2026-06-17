@@ -1,0 +1,5 @@
+requests>=2.31.0
+pytz>=2024.1
+timezonefinder>=6.5.2
+svgwrite>=1.4.3
+PyYAML>=6.0.1

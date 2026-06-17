@@ -1,0 +1,13 @@
+{
+  "weather": "clear",
+  "pet": {
+    "species": "cat",
+    "mood": "happy",
+    "energy": 100,
+    "hunger": 0,
+    "friendship": 0
+  },
+  "recent_action": null,
+  "recent_user": null,
+  "thank_you_cycles": 0
+}
