@@ -3,11 +3,11 @@
   "pet": {
     "species": "cat",
     "mood": "happy",
-    "energy": 40,
+    "energy": 100,
     "hunger": 0,
-    "friendship": 10
+    "friendship": 0
   },
-  "recent_action": "gift_ball",
-  "recent_user": "octocat",
-  "thank_you_cycles": 2
+  "recent_action": null,
+  "recent_user": null,
+  "thank_you_cycles": 0
 }
