@@ -28,7 +28,7 @@ class TestEventProcessor(unittest.TestCase):
     def test_invalid_command_comment(self):
         result = process_comment("hello world", "testuser")
         self.assertFalse(result["success"])
-        self.assertEqual(result["message"], "Not a command.")
+        self.assertEqual(result["reason"], "invalid_prefix")
 
     def test_unknown_slash_command(self):
         result = process_comment("/fly", "testuser")

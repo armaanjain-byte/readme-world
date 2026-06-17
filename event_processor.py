@@ -14,12 +14,17 @@ def setup_registry():
 
 _REGISTRY = setup_registry()
 
+from interaction_policy import RepositoryPolicy
+
 def process_event(event: Event) -> dict:
-    """Processes an event, executes the command, saves state, and regenerates SVG."""
-    if not event.command_text or not event.command_text.startswith("/"):
+    """Processes an event, validates policy, executes the command, saves state, and regenerates SVG."""
+    
+    # 1. Policy Validation
+    policy_result = RepositoryPolicy.validate(event)
+    if not policy_result["allowed"]:
         return {
             "success": False,
-            "message": "Not a command.",
+            "reason": policy_result["reason"],
             "command": None,
             "user": event.username
         }
@@ -64,7 +69,7 @@ def process_event(event: Event) -> dict:
             
     return result
 
-def process_comment(comment_body: str, username: str, is_owner: bool = False) -> dict:
+def process_comment(comment_body: str, username: str, is_owner: bool = False, issue_number: int = 1) -> dict:
     """Helper method to construct a CommentEvent and process it."""
-    event = CommentEvent(username, comment_body, is_owner)
+    event = CommentEvent(username, comment_body, is_owner, issue_number)
     return process_event(event)
