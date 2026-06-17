@@ -1,0 +1,43 @@
+name: Process Interaction Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  process-comment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - name: Install Dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Process Comment Engine
+        id: engine
+        run: |
+          python github_action_runner.py \
+            "${{ github.event.comment.body }}" \
+            "${{ github.event.comment.user.login }}" \
+            "${{ github.repository_owner }}" \
+            "${{ github.event.issue.number }}"
+            
+      - name: Commit and Push Changes
+        if: steps.engine.outputs.should_commit == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json world.svg
+          git commit -m "Update world state and SVG from comment interaction"
+          git push
