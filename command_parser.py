@@ -1,7 +1,10 @@
+from security import sanitize_username
+from rate_limiter import check_rate_limits
+
 class CommandContext:
     def __init__(self, raw_string, username, is_owner):
         self.raw_string = raw_string
-        self.username = username
+        self.username = sanitize_username(username)
         self.is_owner = is_owner
         self.args = raw_string.strip().split()
 
@@ -32,7 +35,7 @@ class CommandRegistry:
         return self._commands.get(cmd_str)
 
 def parse_and_execute(raw_string, username, is_owner, state, registry):
-    """Parses a command string, validates it, and executes it against the state."""
+    """Parses a command string, validates it, checks rate limits, and executes it."""
     context = CommandContext(raw_string, username, is_owner)
     cmd = registry.get_command(context)
     
@@ -42,6 +45,15 @@ def parse_and_execute(raw_string, username, is_owner, state, registry):
     is_valid, err_msg = cmd.validate(context)
     if not is_valid:
         return False, err_msg
+        
+    # Get command type for rate limiting
+    cmd_type = context.args[0].lower().replace("/", "")
+    
+    # Check rate limits
+    allowed, limit_reason = check_rate_limits(state, context.username, cmd_type, context.is_owner)
+    if not allowed:
+        # Return the specific limit_reason ("cooldown" or "rate_limit")
+        return False, limit_reason
         
     result_msg = cmd.execute(state, context)
     return True, result_msg

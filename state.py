@@ -13,13 +13,16 @@ WEATHER_PROBS = {
     "snow": 0.01
 }
 
+from datetime import datetime, timezone
+
 def load_state():
     """Load state from state.json, fallback to initialization if missing/corrupt."""
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
                 return json.load(f)
-        except json.JSONDecodeError:
+        except Exception:
+            # Catch ALL exceptions (missing, malformed, corrupted) to ensure we never crash.
             pass
     return initialize_state()
 
@@ -31,9 +34,14 @@ def save_state(state):
 def initialize_state():
     """Initialize state from default_state.json, or fallback to hardcoded defaults."""
     if os.path.exists(DEFAULT_STATE_FILE):
-        with open(DEFAULT_STATE_FILE, "r") as f:
-            state = json.load(f)
-    else:
+        try:
+            with open(DEFAULT_STATE_FILE, "r") as f:
+                state = json.load(f)
+        except Exception:
+            state = None
+            
+    if not os.path.exists(DEFAULT_STATE_FILE) or state is None:
+        today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         state = {
             "weather": "clear",
             "pet": {
@@ -49,7 +57,12 @@ def initialize_state():
             "last_gift": None,
             "gifted_by": None,
             "friendship_log": {},
-            "recent_events": []
+            "recent_events": [],
+            "cooldowns": {},
+            "daily_usage": {
+                "date": today_str,
+                "users": {}
+            }
         }
     return state
 

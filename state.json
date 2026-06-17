@@ -9,5 +9,14 @@
   },
   "recent_action": null,
   "recent_user": null,
-  "thank_you_cycles": 0
+  "thank_you_cycles": 0,
+  "last_gift": null,
+  "gifted_by": null,
+  "friendship_log": {},
+  "recent_events": [],
+  "cooldowns": {},
+  "daily_usage": {
+    "date": "2024-01-01",
+    "users": {}
+  }
 }

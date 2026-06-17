@@ -260,6 +260,8 @@ def render_pet(character, mood, registry):
         
     return render_animated_asset(registry, asset_id, 400, y_pos, anim_class)
 
+from security import escape_svg_text
+
 def render_ui(name, mood, weather, character, recent_events, registry):
     ui_elements = ['<g id="ui" transform="translate(10, 10)">']
     
@@ -268,22 +270,27 @@ def render_ui(name, mood, weather, character, recent_events, registry):
     else:
         ui_elements.append('<rect x="0" y="0" width="220" height="80" fill="#000000" opacity="0.5" rx="5" />')
         
-    ui_elements.append(f'<text x="10" y="25" font-family="sans-serif" font-size="16" fill="#ffffff">Owner: {name}</text>')
-    ui_elements.append(f'<text x="10" y="50" font-family="sans-serif" font-size="16" fill="#ffffff">Weather: {weather}</text>')
-    ui_elements.append(f'<text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: {mood}</text>')
+    safe_name = escape_svg_text(name)
+    safe_weather = escape_svg_text(weather)
+    safe_mood = escape_svg_text(mood)
+    
+    ui_elements.append(f'<text x="10" y="25" font-family="sans-serif" font-size="16" fill="#ffffff">Owner: {safe_name}</text>')
+    ui_elements.append(f'<text x="10" y="50" font-family="sans-serif" font-size="16" fill="#ffffff">Weather: {safe_weather}</text>')
+    ui_elements.append(f'<text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: {safe_mood}</text>')
     
     # Recent Event Signboard
     sign_text = "No recent visitors"
     if recent_events and len(recent_events) > 0:
         event = recent_events[0]
         e_type = event.get("type")
-        e_user = event.get("user")
-        e_item = event.get("item")
+        e_user = escape_svg_text(event.get("user", ""))
+        e_item = escape_svg_text(event.get("item", ""))
+        safe_char = escape_svg_text(character)
         
         if e_type == "gift":
             sign_text = f"Thanks {e_user} for the {e_item}!"
         elif e_type == "pet":
-            sign_text = f"{e_user} petted the {character}"
+            sign_text = f"{e_user} petted the {safe_char}"
         elif e_type == "weather":
             sign_text = f"{e_user} changed weather to {e_item}"
             

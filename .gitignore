@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.venv/
+assets/
+world.svg
+state.json
+world.config.yml

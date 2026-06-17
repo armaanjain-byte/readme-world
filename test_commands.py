@@ -27,6 +27,7 @@ class TestInteractionEngine(unittest.TestCase):
         self.state["pet"]["hunger"] = 100
         
         # Give Fish
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift fish", "alice", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["last_gift"], "fish")
@@ -37,6 +38,7 @@ class TestInteractionEngine(unittest.TestCase):
 
         # Give Wool
         self.state["pet"]["energy"] = 100
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift wool", "bob", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["pet"]["energy"], 95)
@@ -44,6 +46,7 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertEqual(self.state["friendship_log"]["bob"], 5)
 
         # Give Bone (minimal effect for cat)
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift bone", "alice", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["pet"]["friendship"], 16) # 15 + 1
@@ -53,6 +56,7 @@ class TestInteractionEngine(unittest.TestCase):
         self.state["pet"]["species"] = "dog"
         
         # Give Bone
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift bone", "charlie", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["last_gift"], "bone")
@@ -63,6 +67,7 @@ class TestInteractionEngine(unittest.TestCase):
 
         # Give Ball
         self.state["pet"]["energy"] = 100
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift ball", "charlie", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["pet"]["energy"], 90)
@@ -70,6 +75,7 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertEqual(self.state["friendship_log"]["charlie"], 18) # 10 + 8
 
         # Give Wool (minimal effect for dog)
+        self.state["cooldowns"] = {}
         success, msg = parse_and_execute("/gift wool", "diana", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["pet"]["friendship"], 19) # 18 + 1

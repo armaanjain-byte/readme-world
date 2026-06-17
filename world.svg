@@ -139,7 +139,7 @@
 <text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: happy</text>
 <g id="signboard" transform="translate(0, 90)">
 <rect x="0" y="0" width="300" height="30" fill="#000000" opacity="0.6" rx="3" />
-<text x="10" y="20" font-family="sans-serif" font-size="14" fill="#ffd700">No recent visitors</text>
+<text x="10" y="20" font-family="sans-serif" font-size="14" fill="#ffd700">alice petted the cat</text>
 </g>
 </g>
 </svg>

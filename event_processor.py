@@ -37,6 +37,14 @@ def process_event(event: Event) -> dict:
     
     cmd_name = event.command_text.split()[0].replace("/", "") if event.command_text else None
     
+    if not success and msg in ["cooldown", "rate_limit"]:
+        return {
+            "success": False,
+            "reason": msg,
+            "command": cmd_name,
+            "user": event.username
+        }
+    
     result = {
         "success": success,
         "message": msg,
