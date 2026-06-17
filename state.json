@@ -19,12 +19,12 @@
     {
       "type": "pet",
       "user": "alice",
-      "timestamp": 1781685059.5270565
+      "timestamp": 1781685692.284979
     }
   ],
   "cooldowns": {
     "alice": {
-      "pet": 1781685059.5270047
+      "pet": 1781685692.2849221
     }
   },
   "daily_usage": {

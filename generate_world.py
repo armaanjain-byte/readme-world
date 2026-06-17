@@ -262,23 +262,58 @@ def render_pet(character, mood, registry):
 
 from security import escape_svg_text
 
-def render_ui(name, mood, weather, character, recent_events, registry):
+def render_ui(name, weather, character, state, registry):
     ui_elements = ['<g id="ui" transform="translate(10, 10)">']
     
-    if "ui_panel" in registry.assets:
-        ui_elements.append('<use href="#ui_panel" x="0" y="0" />')
-    else:
-        ui_elements.append('<rect x="0" y="0" width="220" height="80" fill="#000000" opacity="0.5" rx="5" />')
+    # We will use a larger UI panel or multiple rects for layout.
+    # We'll use a single wide translucent black rect.
+    ui_elements.append('<rect x="0" y="0" width="780" height="90" fill="#000000" opacity="0.6" rx="5" />')
         
     safe_name = escape_svg_text(name)
     safe_weather = escape_svg_text(weather)
-    safe_mood = escape_svg_text(mood)
     
-    ui_elements.append(f'<text x="10" y="25" font-family="sans-serif" font-size="16" fill="#ffffff">Owner: {safe_name}</text>')
-    ui_elements.append(f'<text x="10" y="50" font-family="sans-serif" font-size="16" fill="#ffffff">Weather: {safe_weather}</text>')
-    ui_elements.append(f'<text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: {safe_mood}</text>')
+    pet = state.get("pet", {})
+    safe_mood = escape_svg_text(pet.get("mood", "happy").capitalize())
+    friendship = pet.get("friendship", 0)
+    energy = pet.get("energy", 100)
+    hunger = pet.get("hunger", 0)
     
-    # Recent Event Signboard
+    # --- Column 1: Status ---
+    col1_x = 10
+    ui_elements.append(f'<text x="{col1_x}" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Status</text>')
+    ui_elements.append(f'<text x="{col1_x}" y="40" font-family="sans-serif" font-size="12" fill="#ffffff">Mood: {safe_mood}</text>')
+    ui_elements.append(f'<text x="{col1_x}" y="55" font-family="sans-serif" font-size="12" fill="#ffffff">Friendship: {friendship}</text>')
+    ui_elements.append(f'<text x="{col1_x}" y="70" font-family="sans-serif" font-size="12" fill="#ffffff">Energy: {energy}</text>')
+    ui_elements.append(f'<text x="{col1_x}" y="85" font-family="sans-serif" font-size="12" fill="#ffffff">Hunger: {hunger}</text>')
+    
+    # --- Column 2: Leaderboard ---
+    col2_x = 200
+    friendship_log = state.get("friendship_log", {})
+    sorted_friends = sorted(friendship_log.items(), key=lambda item: item[1], reverse=True)[:3]
+    
+    ui_elements.append(f'<text x="{col2_x}" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Top Friends</text>')
+    if not sorted_friends:
+        ui_elements.append(f'<text x="{col2_x}" y="40" font-family="sans-serif" font-size="12" fill="#aaaaaa">No friends yet</text>')
+    else:
+        for i, (f_user, f_score) in enumerate(sorted_friends):
+            safe_f_user = escape_svg_text(f_user)
+            ui_elements.append(f'<text x="{col2_x}" y="{40 + (i*15)}" font-family="sans-serif" font-size="12" fill="#ffffff">{i+1}. {safe_f_user} ({f_score})</text>')
+            
+    # --- Column 3: Gifts & Events ---
+    col3_x = 450
+    last_gift = state.get("last_gift")
+    gifted_by = state.get("gifted_by")
+    
+    ui_elements.append(f'<text x="{col3_x}" y="20" font-family="sans-serif" font-size="14" fill="#ffffff" font-weight="bold">Recent Activity</text>')
+    
+    y_offset = 40
+    if last_gift and gifted_by:
+        safe_gift = escape_svg_text(str(last_gift).capitalize())
+        safe_giver = escape_svg_text(str(gifted_by))
+        ui_elements.append(f'<text x="{col3_x}" y="{y_offset}" font-family="sans-serif" font-size="12" fill="#ffffff">Gift: {safe_gift} (From: {safe_giver})</text>')
+        y_offset += 15
+        
+    recent_events = state.get("recent_events", [])
     sign_text = "No recent visitors"
     if recent_events and len(recent_events) > 0:
         event = recent_events[0]
@@ -294,12 +329,8 @@ def render_ui(name, mood, weather, character, recent_events, registry):
         elif e_type == "weather":
             sign_text = f"{e_user} changed weather to {e_item}"
             
-    # Render signboard slightly below the main UI panel
-    ui_elements.append('<g id="signboard" transform="translate(0, 90)">')
-    ui_elements.append('<rect x="0" y="0" width="300" height="30" fill="#000000" opacity="0.6" rx="3" />')
-    ui_elements.append(f'<text x="10" y="20" font-family="sans-serif" font-size="14" fill="#ffd700">{sign_text}</text>')
-    ui_elements.append('</g>')
-    
+    ui_elements.append(f'<text x="{col3_x}" y="{y_offset}" font-family="sans-serif" font-size="12" fill="#ffd700">{sign_text}</text>')
+
     ui_elements.append('</g>')
     return "\n".join(ui_elements)
 
@@ -341,7 +372,7 @@ def generate_svg():
         render_background(weather, registry),
         render_weather(weather, registry),
         render_pet(character, mood, registry),
-        render_ui(name, mood, weather, character, recent_events, registry),
+        render_ui(name, weather, character, state, registry),
         svg_close
     ])
 
