@@ -260,7 +260,7 @@ def render_pet(character, mood, registry):
         
     return render_animated_asset(registry, asset_id, 400, y_pos, anim_class)
 
-def render_ui(name, mood, weather, registry):
+def render_ui(name, mood, weather, character, recent_events, registry):
     ui_elements = ['<g id="ui" transform="translate(10, 10)">']
     
     if "ui_panel" in registry.assets:
@@ -271,6 +271,28 @@ def render_ui(name, mood, weather, registry):
     ui_elements.append(f'<text x="10" y="25" font-family="sans-serif" font-size="16" fill="#ffffff">Owner: {name}</text>')
     ui_elements.append(f'<text x="10" y="50" font-family="sans-serif" font-size="16" fill="#ffffff">Weather: {weather}</text>')
     ui_elements.append(f'<text x="10" y="75" font-family="sans-serif" font-size="16" fill="#ffffff">Mood: {mood}</text>')
+    
+    # Recent Event Signboard
+    sign_text = "No recent visitors"
+    if recent_events and len(recent_events) > 0:
+        event = recent_events[0]
+        e_type = event.get("type")
+        e_user = event.get("user")
+        e_item = event.get("item")
+        
+        if e_type == "gift":
+            sign_text = f"Thanks {e_user} for the {e_item}!"
+        elif e_type == "pet":
+            sign_text = f"{e_user} petted the {character}"
+        elif e_type == "weather":
+            sign_text = f"{e_user} changed weather to {e_item}"
+            
+    # Render signboard slightly below the main UI panel
+    ui_elements.append('<g id="signboard" transform="translate(0, 90)">')
+    ui_elements.append('<rect x="0" y="0" width="300" height="30" fill="#000000" opacity="0.6" rx="3" />')
+    ui_elements.append(f'<text x="10" y="20" font-family="sans-serif" font-size="14" fill="#ffd700">{sign_text}</text>')
+    ui_elements.append('</g>')
+    
     ui_elements.append('</g>')
     return "\n".join(ui_elements)
 
@@ -285,6 +307,7 @@ def generate_svg():
     weather = state.get("weather", "clear")
     pet_state = state.get("pet", {})
     mood = pet_state.get("mood", "happy")
+    recent_events = state.get("recent_events", [])
 
     registry = AssetRegistry()
     
@@ -311,7 +334,7 @@ def generate_svg():
         render_background(weather, registry),
         render_weather(weather, registry),
         render_pet(character, mood, registry),
-        render_ui(name, mood, weather, registry),
+        render_ui(name, mood, weather, character, recent_events, registry),
         svg_close
     ])
 

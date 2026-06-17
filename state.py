@@ -48,7 +48,8 @@ def initialize_state():
             "thank_you_cycles": 0,
             "last_gift": None,
             "gifted_by": None,
-            "friendship_log": {}
+            "friendship_log": {},
+            "recent_events": []
         }
     return state
 
@@ -94,6 +95,22 @@ def update_random_world_state(state):
 
 # --- Dedicated Interaction Mutation Functions ---
 
+import time
+
+def _append_event(state, event_type, user, item=None):
+    events = state.setdefault("recent_events", [])
+    event = {
+        "type": event_type,
+        "user": user,
+        "timestamp": time.time()
+    }
+    if item:
+        event["item"] = item
+        
+    events.insert(0, event)
+    # Keep only the 10 most recent
+    state["recent_events"] = events[:10]
+
 def _increase_user_friendship(state, user, amount):
     if user == "guest" or not user:
         return
@@ -110,7 +127,8 @@ def apply_pet_interaction(state, user):
     state["recent_user"] = user
     state["thank_you_cycles"] = 2
     
-    _increase_user_friendship(state, user, 2) # Arbitrary base score for petting
+    _increase_user_friendship(state, user, 2)
+    _append_event(state, "pet", user)
 
 def apply_gift_interaction(state, gift_type, user):
     """Apply a gift interaction to state using species-aware logic."""
@@ -137,7 +155,7 @@ def apply_gift_interaction(state, gift_type, user):
             pet["energy"] = max(0, pet.get("energy", 100) - 10)
             friendship_gain = 3
         elif gift_type == "bone":
-            friendship_gain = 1 # minimal effect
+            friendship_gain = 1
             
     elif species == "dog":
         if gift_type == "bone":
@@ -149,12 +167,13 @@ def apply_gift_interaction(state, gift_type, user):
         elif gift_type == "fish":
             friendship_gain = 3
         elif gift_type == "wool":
-            friendship_gain = 1 # minimal effect
+            friendship_gain = 1
 
     pet["friendship"] = min(100, pet.get("friendship", 0) + friendship_gain)
     _increase_user_friendship(state, user, friendship_gain)
+    _append_event(state, "gift", user, item=gift_type)
 
-def apply_weather_override(state, weather):
+def apply_weather_override(state, weather, user="owner"):
     """Force weather override."""
     if weather in ["clear", "rain", "storm", "snow"]:
         state["weather"] = weather
@@ -166,3 +185,5 @@ def apply_weather_override(state, weather):
         else:
             if pet.get("mood") == "sad":
                 pet["mood"] = "happy"
+                
+        _append_event(state, "weather", user, item=weather)

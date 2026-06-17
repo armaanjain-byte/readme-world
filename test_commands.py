@@ -112,5 +112,19 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual("Command not found.", msg)
 
+    def test_recent_events_tracking(self):
+        # Fire 11 commands to test trimming to 10
+        for i in range(11):
+            parse_and_execute(f"/gift fish", f"user_{i}", False, self.state, self.registry)
+            
+        events = self.state["recent_events"]
+        self.assertEqual(len(events), 10)
+        
+        # Most recent should be user_10
+        self.assertEqual(events[0]["type"], "gift")
+        self.assertEqual(events[0]["user"], "user_10")
+        self.assertEqual(events[0]["item"], "fish")
+        self.assertIn("timestamp", events[0])
+
 if __name__ == '__main__':
     unittest.main()

@@ -48,5 +48,5 @@ class WeatherCommand(Command):
         
     def execute(self, state, context: CommandContext) -> str:
         weather = context.args[1].lower()
-        state_module.apply_weather_override(state, weather)
+        state_module.apply_weather_override(state, weather, context.username)
         return f"Weather magically changed to {weather}."
