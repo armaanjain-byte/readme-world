@@ -87,3 +87,43 @@ def update_random_world_state(state):
             state["recent_user"] = None
 
     return state
+
+
+# --- Dedicated Interaction Mutation Functions ---
+
+def apply_pet_interaction(state, user):
+    """Increase friendship and set recent action for a pet command."""
+    pet = state.setdefault("pet", {})
+    pet["friendship"] = min(100, pet.get("friendship", 0) + 10)
+    pet["mood"] = "happy"
+    
+    state["recent_action"] = "pet"
+    state["recent_user"] = user
+    state["thank_you_cycles"] = 2
+
+def apply_gift_interaction(state, gift_type, user):
+    """Apply a gift interaction to state."""
+    state["recent_action"] = f"gift_{gift_type}"
+    state["recent_user"] = user
+    state["thank_you_cycles"] = 2
+    
+    pet = state.setdefault("pet", {})
+    if gift_type in ["fish", "bone"]:
+        pet["hunger"] = max(0, pet.get("hunger", 0) - 30)
+    elif gift_type in ["wool", "ball"]:
+        pet["energy"] = max(0, pet.get("energy", 100) - 20)
+
+    pet["mood"] = "happy"
+
+def apply_weather_override(state, weather):
+    """Force weather override."""
+    if weather in ["clear", "rain", "storm", "snow"]:
+        state["weather"] = weather
+        
+        pet = state.setdefault("pet", {})
+        if weather in ["storm", "rain", "snow"]:
+            if pet.get("mood") not in ["hungry", "sleepy"]:
+                pet["mood"] = "sad"
+        else:
+            if pet.get("mood") == "sad":
+                pet["mood"] = "happy"

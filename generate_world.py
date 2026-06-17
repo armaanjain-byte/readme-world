@@ -8,6 +8,20 @@ STATE_FILE = "state.json"
 OUTPUT_FILE = "world.svg"
 ASSETS_DIR = "assets"
 
+MOOD_ANIMATIONS = {
+    "happy": "anim-bounce",
+    "sleepy": "anim-breathe",
+    "hungry": "anim-pace",
+    "scared": "anim-shake"
+}
+
+WEATHER_ANIMATIONS = {
+    "cloud": "anim-float",
+    "rain": "anim-rain",
+    "snow": "anim-snowfall",
+    "lightning": "anim-lightning"
+}
+
 class AssetLoader:
     """Loads SVG files and strips outer tags to prepare them for <defs> insertion."""
     
@@ -17,8 +31,6 @@ class AssetLoader:
             return ""
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
-        
-        # Extract content inside <svg> if it exists
         match = re.search(r'<svg[^>]*>(.*?)</svg>', content, re.IGNORECASE | re.DOTALL)
         if match:
             return match.group(1).strip()
@@ -32,7 +44,6 @@ class AssetRegistry:
         self.loader = AssetLoader()
         
     def load(self, name, filepath):
-        """Loads an asset from a file and registers it if found."""
         content = self.loader.load_asset(filepath)
         if content:
             self.assets[name] = content
@@ -40,7 +51,6 @@ class AssetRegistry:
         return False
         
     def get_defs_block(self):
-        """Constructs the <defs> block containing all loaded assets."""
         defs = ["<defs>"]
         for content in self.assets.values():
             defs.append(content)
@@ -76,41 +86,159 @@ def get_weather_colors(weather):
         return {"sky": "#E0FFFF", "ground": "#e0e0e0"}
     return {"sky": "#87CEEB", "ground": "#4a7c3f"}
 
+def generate_css():
+    """Generates the centralized CSS animation layer for the SVG."""
+    return '''
+<style>
+    /* Base animation properties */
+    .anim-bounce, .anim-breathe, .anim-pace, .anim-shake, .anim-float, .anim-rain, .anim-snowfall, .anim-lightning, .anim-sway, .anim-blink {
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
+    /* Weather Animations */
+    .anim-float {
+        animation: float 20s linear infinite;
+    }
+    @keyframes float {
+        0% { transform: translateX(0px); }
+        50% { transform: translateX(30px); }
+        100% { transform: translateX(0px); }
+    }
+
+    .anim-rain {
+        animation: rain 1s linear infinite;
+    }
+    @keyframes rain {
+        0% { transform: translateY(-50px); }
+        100% { transform: translateY(50px); }
+    }
+
+    .anim-snowfall {
+        animation: snowfall 5s linear infinite;
+    }
+    @keyframes snowfall {
+        0% { transform: translate(0px, -50px); }
+        50% { transform: translate(20px, 0px); }
+        100% { transform: translate(-10px, 50px); }
+    }
+
+    .anim-lightning {
+        animation: lightning 10s infinite;
+    }
+    @keyframes lightning {
+        0%, 90%, 100% { opacity: 0; }
+        92% { opacity: 1; }
+        94% { opacity: 0; }
+        96% { opacity: 0.8; }
+        98% { opacity: 0; }
+    }
+    
+    .anim-sway {
+        animation: sway 4s ease-in-out infinite alternate;
+    }
+    @keyframes sway {
+        0% { transform: rotate(-2deg); }
+        100% { transform: rotate(2deg); }
+    }
+
+    .anim-blink {
+        animation: blink 3s infinite;
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+
+    /* Pet Behavior Animations */
+    .anim-bounce {
+        animation: bounce 1s ease-in-out infinite;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    .anim-breathe {
+        animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .anim-pace {
+        animation: pace 6s linear infinite;
+    }
+    @keyframes pace {
+        0% { transform: translateX(0) scaleX(1); }
+        25% { transform: translateX(40px) scaleX(1); }
+        26% { transform: translateX(40px) scaleX(-1); } /* flip */
+        75% { transform: translateX(-40px) scaleX(-1); }
+        76% { transform: translateX(-40px) scaleX(1); } /* flip back */
+        100% { transform: translateX(0) scaleX(1); }
+    }
+
+    .anim-shake {
+        animation: shake 0.2s linear infinite;
+    }
+    @keyframes shake {
+        0% { transform: translateX(-2px); }
+        50% { transform: translateX(2px); }
+        100% { transform: translateX(-2px); }
+    }
+</style>
+'''
+
+def render_animated_asset(registry, asset_id, x, y, anim_class=None):
+    """Renders a loaded asset, optionally applying a CSS animation class."""
+    if asset_id not in registry.assets:
+        return ""
+        
+    if anim_class:
+        # Wrap the <use> in translation and animation groups
+        return f'<g transform="translate({x}, {y})"><g class="{anim_class}"><use href="#{asset_id}" /></g></g>'
+    else:
+        return f'<use href="#{asset_id}" x="{x}" y="{y}" />'
+
+
 def render_background(weather, registry):
     colors = get_weather_colors(weather)
     sky = f'<rect id="sky" x="0" y="0" width="800" height="300" fill="{colors["sky"]}" />'
     ground = f'<rect id="ground" x="0" y="240" width="800" height="60" fill="{colors["ground"]}" />'
     
-    trees = ""
+    trees = []
     if "forest_tree" in registry.assets:
-        trees = '''
-        <use href="#forest_tree" x="80" y="168" />
-        <use href="#forest_tree" x="350" y="168" />
-        <use href="#forest_tree" x="650" y="168" />
-        '''
+        # Give trees a subtle sway
+        trees.append(render_animated_asset(registry, "forest_tree", 80, 168, "anim-sway"))
+        trees.append(render_animated_asset(registry, "forest_tree", 350, 168, "anim-sway"))
+        trees.append(render_animated_asset(registry, "forest_tree", 650, 168, "anim-sway"))
     
-    return f"{sky}\n{ground}\n{trees}"
+    return f"{sky}\n{ground}\n" + "\n".join(trees)
 
 def render_weather(weather, registry):
     elements = []
     
     if weather in ["cloudy", "rain", "storm", "snow"]:
-        if "weather_cloud" in registry.assets:
-            elements.append('<use href="#weather_cloud" x="100" y="20" />')
-            elements.append('<use href="#weather_cloud" x="400" y="40" />')
-            elements.append('<use href="#weather_cloud" x="600" y="10" />')
+        anim = WEATHER_ANIMATIONS.get("cloud")
+        elements.append(render_animated_asset(registry, "weather_cloud", 100, 20, anim))
+        elements.append(render_animated_asset(registry, "weather_cloud", 400, 40, anim))
+        elements.append(render_animated_asset(registry, "weather_cloud", 600, 10, anim))
     
     if weather == "rain":
-        if "weather_rain_overlay" in registry.assets:
-            elements.append('<use href="#weather_rain_overlay" x="0" y="0" />')
+        anim = WEATHER_ANIMATIONS.get("rain")
+        elements.append(render_animated_asset(registry, "weather_rain_overlay", 0, 0, anim))
             
     if weather == "storm":
-        if "weather_storm_overlay" in registry.assets:
-            elements.append('<use href="#weather_storm_overlay" x="0" y="0" />')
+        anim_rain = WEATHER_ANIMATIONS.get("rain")
+        anim_lightning = WEATHER_ANIMATIONS.get("lightning")
+        elements.append(render_animated_asset(registry, "weather_storm_overlay", 0, 0, anim_rain))
+        # Add lightning flash spanning the screen
+        elements.append(f'<rect x="0" y="0" width="800" height="300" fill="#ffffff" class="{anim_lightning}" pointer-events="none" />')
     
     if weather == "snow":
-        if "weather_snow_overlay" in registry.assets:
-            elements.append('<use href="#weather_snow_overlay" x="0" y="0" />')
+        anim = WEATHER_ANIMATIONS.get("snow")
+        elements.append(render_animated_asset(registry, "weather_snow_overlay", 0, 0, anim))
 
     return "\n".join(elements)
 
@@ -122,6 +250,7 @@ def render_pet(character, mood, registry):
             mood = "happy"
             
     asset_id = f"{character}_{mood}"
+    anim_class = MOOD_ANIMATIONS.get(mood)
     
     y_pos = 210 if character == "cat" else 204
     if mood == "sleepy":
@@ -129,10 +258,7 @@ def render_pet(character, mood, registry):
     elif mood == "hungry" and character == "dog":
         y_pos += 4
         
-    if asset_id in registry.assets:
-        return f'<use href="#{asset_id}" x="400" y="{y_pos}" />'
-    
-    return ""
+    return render_animated_asset(registry, asset_id, 400, y_pos, anim_class)
 
 def render_ui(name, mood, weather, registry):
     ui_elements = ['<g id="ui" transform="translate(10, 10)">']
@@ -160,10 +286,8 @@ def generate_svg():
     pet_state = state.get("pet", {})
     mood = pet_state.get("mood", "happy")
 
-    # Initialize Asset System
     registry = AssetRegistry()
     
-    # Load necessary assets
     registry.load(f"{character}_{mood}", os.path.join(ASSETS_DIR, "characters", character, f"{mood}.svg"))
     registry.load("forest_tree", os.path.join(ASSETS_DIR, "biomes", biome, "tree.svg"))
     
@@ -182,6 +306,7 @@ def generate_svg():
 
     content = "\n".join([
         svg_open,
+        generate_css(),
         registry.get_defs_block(),
         render_background(weather, registry),
         render_weather(weather, registry),
