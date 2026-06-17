@@ -5,17 +5,23 @@
     "mood": "happy",
     "energy": 100,
     "hunger": 0,
-    "friendship": 10
+    "friendship": 20
   },
   "recent_action": "pet",
-  "recent_user": "alice",
+  "recent_user": "armaanjain-byte",
   "thank_you_cycles": 2,
   "last_gift": null,
   "gifted_by": null,
   "friendship_log": {
-    "alice": 2
+    "alice": 2,
+    "armaanjain-byte": 2
   },
   "recent_events": [
+    {
+      "type": "pet",
+      "user": "armaanjain-byte",
+      "timestamp": 1781685488.3834689
+    },
     {
       "type": "pet",
       "user": "alice",
