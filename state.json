@@ -5,7 +5,7 @@
     "mood": "happy",
     "energy": 100,
     "hunger": 0,
-    "friendship": 10
+    "friendship": 20
   },
   "recent_action": "pet",
   "recent_user": "armaanjain-byte",
@@ -13,9 +13,14 @@
   "last_gift": null,
   "gifted_by": null,
   "friendship_log": {
-    "armaanjain-byte": 2
+    "armaanjain-byte": 4
   },
   "recent_events": [
+    {
+      "type": "pet",
+      "user": "armaanjain-byte",
+      "timestamp": 1781760643.8436313
+    },
     {
       "type": "pet",
       "user": "armaanjain-byte",
