@@ -364,6 +364,11 @@ def generate_svg():
     weather = state.get("weather", "clear")
     pet_state = state.get("pet", {})
     mood = pet_state.get("mood", "happy")
+    
+    # Normalize mood to match available assets, mirroring render_pet logic
+    if mood not in ["happy", "sleepy", "hungry", "scared"]:
+        mood = "scared" if mood == "sad" else "happy"
+        
     recent_events = state.get("recent_events", [])
 
     registry = AssetRegistry()
