@@ -121,9 +121,6 @@
     <rect x="8" y="0" width="8" height="4" fill="#ffffff" opacity="0.8"/>
     <rect x="0" y="6" width="24" height="6" fill="#ffffff" opacity="0.8"/>
 </g>
-<g id="ui_panel">
-    <rect x="0" y="0" width="220" height="80" fill="#000000" opacity="0.5" rx="5" />
-</g>
 </defs>
 <rect id="sky" x="0" y="0" width="800" height="300" fill="#87CEEB" />
 <rect id="ground" x="0" y="240" width="800" height="60" fill="#4a7c3f" />
