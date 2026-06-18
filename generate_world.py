@@ -41,14 +41,11 @@ class AssetLoader:
             frames = width // frame_width
             
             values = ";".join([str(-i * frame_width) for i in range(frames)])
-            
-            # Wrap PNG in an animated SVG group
+            # Wrap PNG in an animated group
             return f'''<g id="{name}" transform="scale(2)">
-    <svg width="{frame_width}" height="{frame_width}" viewBox="0 0 {frame_width} {frame_width}">
-        <image href="data:image/png;base64,{b64_data}" width="{width}" height="{height}">
-            <animate attributeName="x" values="{values}" dur="0.8s" calcMode="discrete" repeatCount="indefinite"/>
-        </image>
-    </svg>
+    <image href="data:image/png;base64,{b64_data}" width="{width}" height="{height}">
+        <animate attributeName="x" values="{values}" dur="0.8s" calcMode="discrete" repeatCount="indefinite"/>
+    </image>
 </g>'''
 
         with open(filepath, "r", encoding="utf-8") as f:
