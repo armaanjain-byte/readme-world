@@ -20,7 +20,6 @@ jobs:
       - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          # Fetch full history so we can push to a different branch later
           fetch-depth: 0
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
@@ -35,21 +34,11 @@ jobs:
         run: pip install -r requirements.txt
 
       # ── 4. Ensure the output branch exists ─────────────────────────────────
-      #
-      # Strategy:
-      #   • Try to check out the existing "output" branch.
-      #   • If it doesn't exist, create it as an orphan branch with an
-      #     empty initial commit so subsequent steps have somewhere to push.
-      #   • Always check the branch out into a separate worktree directory
-      #     (./output-branch) so that the source-branch files are still
-      #     accessible at the workspace root.
-      #
       - name: Ensure output branch exists
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Check whether the remote output branch already exists
           if git ls-remote --exit-code --heads origin output; then
             echo "OUTPUT_BRANCH_EXISTS=true" >> "$GITHUB_ENV"
           else
@@ -59,19 +48,16 @@ jobs:
       - name: Create orphan output branch (first run only)
         if: env.OUTPUT_BRANCH_EXISTS == 'false'
         run: |
-          # Save current HEAD so we can return to it
           CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
 
           git checkout --orphan output
           git rm -rf .
-          # Add a minimal placeholder so the branch has at least one commit
           echo "# readme-world output branch" > README.md
           echo "This branch is auto-managed by GitHub Actions. Do not edit manually." >> README.md
           git add README.md
           git commit -m "chore: initialise output branch"
           git push origin output
 
-          # Return to the source branch
           git checkout "$CURRENT_BRANCH"
 
       # ── 5. Check out the output branch into a worktree ──────────────────────
@@ -80,27 +66,33 @@ jobs:
           git fetch origin output
           git worktree add ./output-branch output
 
-      # ── 6. Restore cached state.json from the output branch ─────────────────
+      # ── 6. Restore state.json from output branch into generated/ ────────────
+      #
+      # artifact_manager reads/writes from generated/, NOT the workspace root.
+      # We must restore into generated/ so the engine picks up the existing state.
+      #
       - name: Restore state.json from output branch
         run: |
+          mkdir -p generated
           if [ -f ./output-branch/state.json ]; then
-            cp ./output-branch/state.json ./state.json
-            echo "Restored existing state.json"
+            cp ./output-branch/state.json ./generated/state.json
+            echo "Restored existing state.json into generated/"
           else
-            echo "No existing state.json — will create fresh."
+            echo "No existing state.json — engine will initialize fresh."
           fi
 
       # ── 7. Run the generator ────────────────────────────────────────────────
+      #
+      # generate_world.py writes to generated/world.svg via artifact_manager.
+      #
       - name: Generate world.svg and update state.json
         run: python generate_world.py
 
-      # ── 8. Copy outputs into the output branch worktree ─────────────────────
+      # ── 8. Copy outputs from generated/ into the output branch worktree ─────
       - name: Copy outputs to output branch
         run: |
-          cp world.svg   ./output-branch/world.svg
-          if [ -f ./state.json ]; then
-            cp state.json ./output-branch/state.json
-          fi
+          cp generated/world.svg  ./output-branch/world.svg
+          cp generated/state.json ./output-branch/state.json
 
       # ── 9. Commit & push to the output branch ───────────────────────────────
       - name: Commit and push outputs
@@ -123,8 +115,19 @@ jobs:
       # ── 10. Purge Camo / GitHub image proxy cache ───────────────────────────
       #
       # GitHub proxies raw.githubusercontent.com images through Camo.
-      # Without a cache purge the README would keep showing the old SVG
-      # for up to an hour. This action sends a purge request automatically.
+      # The || true ensures this step never fails the workflow if no camo
+      # URLs are found (e.g., first run before the image is ever viewed).
       #
       - name: Purge Camo image cache
-        uses: kevincobain2000/action-camo-purge@v1
+        run: |
+          urls=$(curl -sLk "https://github.com/armaanjain-byte/readme-world/blob/main/README.md" \
+            | grep -Eo "(http|https)://camo.githubusercontent.com[a-zA-Z0-9./?=_%:-]*" || true)
+          if [ -n "$urls" ]; then
+            echo "Purging Camo URLs:"
+            echo "$urls"
+            for url in $urls; do
+              curl -sLk "$url" -o /dev/null || true
+            done
+          else
+            echo "No Camo URLs found — skipping purge."
+          fi

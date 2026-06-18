@@ -13,17 +13,37 @@ jobs:
       
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
         
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
+          cache: "pip"
           
       - name: Install Dependencies
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        run: pip install -r requirements.txt
           
+      # ── Restore state from output branch before running the engine ──────────
+      #
+      # artifact_manager reads from generated/state.json.
+      # Pull the latest committed state from the output branch so interactions
+      # accumulate correctly across runs.
+      #
+      - name: Restore state from output branch
+        run: |
+          mkdir -p generated
+          git fetch origin output || true
+          if git ls-remote --exit-code --heads origin output; then
+            git show origin/output:state.json > generated/state.json 2>/dev/null \
+              && echo "State restored from output branch." \
+              || echo "No state.json on output branch yet — starting fresh."
+          else
+            echo "Output branch does not exist yet — starting fresh."
+          fi
+
       - name: Process Comment Engine
         id: engine
         run: |
@@ -32,7 +52,7 @@ jobs:
             "${{ github.event.comment.user.login }}" \
             "${{ github.repository_owner }}" \
             "${{ github.event.issue.number }}"
-            
+          
       - name: Commit and Push Changes
         if: steps.engine.outputs.should_commit == 'true'
         run: |
@@ -43,7 +63,7 @@ jobs:
           cp generated/state.json /tmp/state.json
           cp generated/world.svg /tmp/world.svg
           
-          # Fetch and checkout output branch
+          # Fetch and checkout output branch — preserving existing history
           git fetch origin output || true
           if git ls-remote --exit-code --heads origin output; then
             git checkout -B output origin/output
@@ -51,7 +71,7 @@ jobs:
             git checkout --orphan output
           fi
           
-          # Clear existing tracked files if it was an orphan branch or cleanly reset to root
+          # Clear any tracked source files from the output branch workspace
           git rm -rf . || true
           
           # Restore artifacts to the root of the output branch
@@ -59,8 +79,27 @@ jobs:
           cp /tmp/world.svg ./world.svg
           
           git add state.json world.svg
-          git commit -m "Update world state and SVG from comment interaction" || true
-          git push origin HEAD:output
+          
+          # Only commit if files actually changed
+          if git diff --cached --quiet; then
+            echo "No changes to commit — skipping."
+          else
+            git commit -m "chore(world): update from interaction by ${{ github.event.comment.user.login }}"
+            git push origin HEAD:output
+          fi
 
+      # ── Purge Camo image cache (safe, never fails) ─────────────────────────
       - name: Purge Camo image cache
-        uses: kevincobain2000/action-camo-purge@v1
+        if: steps.engine.outputs.should_commit == 'true'
+        run: |
+          urls=$(curl -sLk "https://github.com/armaanjain-byte/readme-world/blob/main/README.md" \
+            | grep -Eo "(http|https)://camo.githubusercontent.com[a-zA-Z0-9./?=_%:-]*" || true)
+          if [ -n "$urls" ]; then
+            echo "Purging Camo URLs:"
+            echo "$urls"
+            for url in $urls; do
+              curl -sLk "$url" -o /dev/null || true
+            done
+          else
+            echo "No Camo URLs found — skipping purge."
+          fi
