@@ -322,6 +322,10 @@ def render_ui(name, weather, character, state, registry):
             
     ui_elements.append(f'<text x="{col3_x}" y="{y_offset}" font-family="sans-serif" font-size="12" fill="#ffd700">{sign_text}</text>')
 
+    # --- DEBUG FOOTER ---
+    recent_action = state.get("recent_action", "None")
+    ui_elements.append(f'<text x="10" y="280" font-family="monospace" font-size="10" fill="#ff0000">DEBUG - Friendship: {friendship} | Last Gift: {last_gift} | Gifted By: {gifted_by} | Recent Action: {recent_action}</text>')
+
     ui_elements.append('</g>')
     return "\n".join(ui_elements)
 
