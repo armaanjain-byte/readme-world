@@ -120,11 +120,4 @@ jobs:
             git push origin output
           fi
 
-      # ── 10. Purge Camo / GitHub image proxy cache ───────────────────────────
-      #
-      # GitHub proxies raw.githubusercontent.com images through Camo.
-      # Without a cache purge the README would keep showing the old SVG
-      # for up to an hour. This action sends a purge request automatically.
-      #
-      - name: Purge Camo image cache
-        uses: kevincobain2000/action-camo-purge@v1
+     
