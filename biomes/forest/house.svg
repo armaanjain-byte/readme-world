@@ -1,0 +1,8 @@
+<g id="forest_house" transform="scale(3)">
+  <rect x="10" y="15" width="40" height="30" fill="#8b4513"/>
+  <polygon points="5,15 30,0 55,15" fill="#a52a2a"/>
+  <rect x="25" y="25" width="10" height="20" fill="#cd853f"/>
+  <circle cx="32" cy="35" r="1.5" fill="#ffd700"/>
+  <rect x="15" y="20" width="8" height="8" fill="#87cefa"/>
+  <rect x="38" y="20" width="8" height="8" fill="#87cefa"/>
+</g>

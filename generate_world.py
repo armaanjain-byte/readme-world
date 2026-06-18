@@ -37,7 +37,8 @@ from sprite_loader import load_svg_fragment, build_defs
 from worldpack_loader import (
     load_manifest, get_sprite_path, get_weather_colors,
     get_weather_overlay, has_lightning, get_cloud_config,
-    get_biome_props, get_actor_position
+    get_biome_props, get_actor_position, get_progression_props,
+    get_gift_asset
 )
 from security import escape_svg_text
 
@@ -155,14 +156,17 @@ def render_animated_asset(asset_id, x, y, anim_class=None):
         return f'<use href="#{asset_id}" x="{x}" y="{y}" />'
 
 
-def render_background(manifest, weather):
+def render_background(manifest, weather, friendship):
     """Render sky, ground, and biome props — all driven by manifest."""
     colors = get_weather_colors(manifest, weather)
     sky = f'<rect id="sky" x="0" y="0" width="800" height="300" fill="{colors["sky"]}" />'
     ground = f'<rect id="ground" x="0" y="240" width="800" height="60" fill="{colors["ground"]}" />'
 
     props = []
-    for prop_def in get_biome_props(manifest):
+    
+    # Base biome props + Progression props
+    all_props = get_biome_props(manifest) + get_progression_props(manifest, friendship)
+    for prop_def in all_props:
         # Extract the asset ID from the <g id="..."> in the loaded fragment
         asset_path = prop_def.get("asset", "")
         # Derive a stable ID from the path: "biomes/forest/tree.svg" -> "forest_tree"
@@ -220,6 +224,23 @@ def render_actor(manifest, mood):
     actor_x, actor_y = get_actor_position(manifest)
 
     return render_animated_asset(asset_id, actor_x, actor_y, anim_class)
+
+def render_gift(manifest, last_gift):
+    """Render the physical last gift if the manifest supports it."""
+    if not last_gift:
+        return ""
+        
+    gift_info = get_gift_asset(manifest, last_gift)
+    if not gift_info:
+        return ""
+        
+    asset_path = gift_info["asset"]
+    base = os.path.splitext(os.path.basename(asset_path))[0]
+    parent = os.path.basename(os.path.dirname(asset_path))
+    asset_id = f"{parent}_{base}" if parent else base
+    
+    # We use anim-float for gifts just to give them some life
+    return render_animated_asset(asset_id, gift_info["x"], gift_info["y"], "anim-float")
 
 
 def render_ui(name, weather, state):
@@ -327,6 +348,13 @@ def generate_svg():
         asset_path = prop_def.get("asset", "")
         if os.path.exists(asset_path):
             fragments.append(load_svg_fragment(asset_path))
+            
+    # Progression props
+    friendship = pet_state.get("friendship", 0)
+    for prop_def in get_progression_props(manifest, friendship):
+        asset_path = prop_def.get("asset", "")
+        if os.path.exists(asset_path):
+            fragments.append(load_svg_fragment(asset_path))
 
     # Cloud asset
     cloud_config = get_cloud_config(manifest)
@@ -338,6 +366,13 @@ def generate_svg():
     overlay_path = get_weather_overlay(manifest, weather)
     if overlay_path and os.path.exists(overlay_path):
         fragments.append(load_svg_fragment(overlay_path))
+        
+    # Last Gift Asset
+    last_gift = state.get("last_gift")
+    if last_gift:
+        gift_info = get_gift_asset(manifest, last_gift)
+        if gift_info and os.path.exists(gift_info["asset"]):
+            fragments.append(load_svg_fragment(gift_info["asset"]))
 
     defs = build_defs(*fragments)
 
@@ -348,8 +383,9 @@ def generate_svg():
         svg_open,
         generate_css(),
         defs,
-        render_background(manifest, weather),
+        render_background(manifest, weather, friendship),
         render_weather(manifest, weather),
+        render_gift(manifest, last_gift),
         render_actor(manifest, mood),
         render_ui(name, weather, state),
         svg_close

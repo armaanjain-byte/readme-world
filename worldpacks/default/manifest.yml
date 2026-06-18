@@ -19,15 +19,44 @@ gifts:
     hunger: -20
     friendship: 10
     mood: happy
-  wool:
+    asset: gifts/fish.svg
+    x: 430
+    y: 220
+  toy:
     energy: -5
     friendship: 5
     mood: happy
-  ball:
-    energy: -10
+    asset: gifts/toy.svg
+    x: 450
+    y: 230
+  treat:
+    hunger: -10
     friendship: 3
-  bone:
-    friendship: 1
+    asset: gifts/treat.svg
+    x: 420
+    y: 235
+
+progression:
+  - threshold: 25
+    props:
+      - asset: biomes/forest/flower.svg
+        positions:
+          - { x: 120, y: 220, anim: "anim-breathe" }
+  - threshold: 50
+    props:
+      - asset: biomes/forest/tree.svg
+        positions:
+          - { x: 550, y: 168, anim: "anim-sway" }
+  - threshold: 100
+    props:
+      - asset: biomes/forest/pond.svg
+        positions:
+          - { x: 200, y: 240 }
+  - threshold: 200
+    props:
+      - asset: biomes/forest/house.svg
+        positions:
+          - { x: 50, y: 150 }
 
 # Weather definitions — each key is a weather type
 weather:

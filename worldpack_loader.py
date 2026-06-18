@@ -70,3 +70,22 @@ def get_actor_position(manifest):
 def get_available_weather(manifest):
     """Return list of weather type names defined in the manifest."""
     return list(manifest.get("weather", {}).keys())
+
+def get_progression_props(manifest, current_friendship):
+    """Return list of prop dicts from progression tiers <= current_friendship."""
+    progression = manifest.get("progression", [])
+    props = []
+    for tier in progression:
+        if current_friendship >= tier.get("threshold", 0):
+            props.extend(tier.get("props", []))
+    return props
+
+def get_gift_asset(manifest, gift_type):
+    """Return asset path and optional offset for a gift."""
+    gift_def = manifest.get("gifts", {}).get(gift_type, {})
+    asset = gift_def.get("asset")
+    x = gift_def.get("x", 450)
+    y = gift_def.get("y", 240)
+    if not asset:
+        return None
+    return {"asset": asset, "x": x, "y": y}

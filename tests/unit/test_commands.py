@@ -35,21 +35,21 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertEqual(self.state["pet"]["friendship"], 10)
         self.assertEqual(self.state["friendship_log"]["alice"], 10)
 
-        # Give Wool
+        # Give Toy
         self.state["pet"]["energy"] = 100
         self.state["cooldowns"] = {}
-        success, msg = parse_and_execute("/gift wool", "bob", False, self.state, self.registry)
+        success, msg = parse_and_execute("/gift toy", "bob", False, self.state, self.registry)
         self.assertTrue(success)
         self.assertEqual(self.state["pet"]["energy"], 95)
         self.assertEqual(self.state["pet"]["friendship"], 15) # 10 + 5
         self.assertEqual(self.state["friendship_log"]["bob"], 5)
 
-        # Give Bone (minimal effect for cat)
+        # Give Treat (minimal effect for cat)
         self.state["cooldowns"] = {}
-        success, msg = parse_and_execute("/gift bone", "alice", False, self.state, self.registry)
+        success, msg = parse_and_execute("/gift treat", "alice", False, self.state, self.registry)
         self.assertTrue(success)
-        self.assertEqual(self.state["pet"]["friendship"], 16) # 15 + 1
-        self.assertEqual(self.state["friendship_log"]["alice"], 11) # 10 + 1
+        self.assertEqual(self.state["pet"]["friendship"], 18) # 15 + 3
+        self.assertEqual(self.state["friendship_log"]["alice"], 13) # 10 + 3
 
 
     def test_guest_friendship_ignored(self):

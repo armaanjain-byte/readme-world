@@ -1,0 +1,45 @@
+name: "CyberCity 2077"
+version: "1.0"
+
+actor:
+  x: 400
+  y: 210
+
+sprites:
+  happy: sprites/robot/happy.svg
+  sleepy: sprites/robot/sleepy.svg
+  hungry: sprites/robot/hungry.svg
+  scared: sprites/robot/scared.svg
+
+gifts:
+  oil:
+    friendship: 10
+    mood: happy
+    asset: gifts/oil.svg
+    x: 430
+    y: 220
+  battery:
+    energy: 20
+    friendship: 5
+    asset: gifts/battery.svg
+    x: 450
+    y: 230
+
+progression:
+  - threshold: 25
+    props:
+      - asset: biomes/cyberpunk/neon_sign.svg
+        positions: [{ x: 120, y: 150, anim: "anim-blink" }]
+  - threshold: 50
+    props:
+      - asset: biomes/cyberpunk/server.svg
+        positions: [{ x: 550, y: 160 }]
+
+weather:
+  clear:
+    sky: "#1a0b2e" # Deep purple
+    ground: "#111111" # Asphalt
+  rain:
+    sky: "#0d0517"
+    ground: "#050505"
+    overlay: weather/rain.svg

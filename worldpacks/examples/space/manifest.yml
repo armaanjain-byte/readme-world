@@ -1,0 +1,45 @@
+name: "Deep Space"
+version: "1.0"
+
+actor:
+  x: 400
+  y: 150 # Floating
+
+sprites:
+  happy: sprites/astronaut/happy.svg
+  sleepy: sprites/astronaut/sleepy.svg
+  hungry: sprites/astronaut/hungry.svg
+  scared: sprites/astronaut/scared.svg
+
+gifts:
+  crystal:
+    friendship: 10
+    mood: happy
+    asset: gifts/crystal.svg
+    x: 430
+    y: 160
+  oxygen:
+    energy: 20
+    friendship: 5
+    asset: gifts/oxygen.svg
+    x: 450
+    y: 170
+
+progression:
+  - threshold: 25
+    props:
+      - asset: biomes/space/satellite.svg
+        positions: [{ x: 120, y: 50, anim: "anim-float" }]
+  - threshold: 50
+    props:
+      - asset: biomes/space/station.svg
+        positions: [{ x: 550, y: 80 }]
+
+weather:
+  clear:
+    sky: "#000000"
+    ground: "#333333" # Moon surface
+  storm:
+    sky: "#110000" # Solar flare
+    ground: "#442222"
+    lightning: true

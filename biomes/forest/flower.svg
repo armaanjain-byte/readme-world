@@ -1,0 +1,8 @@
+<g id="forest_flower" transform="scale(1.5)">
+  <rect x="5" y="5" width="2" height="10" fill="#228b22"/>
+  <circle cx="6" cy="3" r="3" fill="#ff69b4"/>
+  <circle cx="3" cy="6" r="3" fill="#ff69b4"/>
+  <circle cx="9" cy="6" r="3" fill="#ff69b4"/>
+  <circle cx="6" cy="9" r="3" fill="#ff69b4"/>
+  <circle cx="6" cy="6" r="2" fill="#ffd700"/>
+</g>

@@ -1,0 +1,45 @@
+name: "Fantasy Realm"
+version: "1.0"
+
+actor:
+  x: 400
+  y: 210
+
+sprites:
+  happy: sprites/dragon/happy.svg
+  sleepy: sprites/dragon/sleepy.svg
+  hungry: sprites/dragon/hungry.svg
+  scared: sprites/dragon/scared.svg
+
+gifts:
+  gem:
+    friendship: 10
+    mood: happy
+    asset: gifts/gem.svg
+    x: 430
+    y: 220
+  meat:
+    hunger: -25
+    friendship: 5
+    asset: gifts/meat.svg
+    x: 450
+    y: 230
+
+progression:
+  - threshold: 25
+    props:
+      - asset: biomes/fantasy/crystal.svg
+        positions: [{ x: 120, y: 220, anim: "anim-breathe" }]
+  - threshold: 50
+    props:
+      - asset: biomes/fantasy/tower.svg
+        positions: [{ x: 550, y: 100 }]
+
+weather:
+  clear:
+    sky: "#4B0082" # Indigo sky
+    ground: "#556B2F" # Dark olive
+  storm:
+    sky: "#2F004F"
+    ground: "#2a4a2a"
+    lightning: true
