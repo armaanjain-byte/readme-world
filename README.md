@@ -28,3 +28,9 @@ After you comment, a GitHub Actions workflow runs automatically and updates the 
 - The pet's mood, energy, and friendship respond to gifts
 - The world SVG is regenerated and committed to the `output` branch
 - The README always pulls the latest image from that branch
+
+---
+
+## Credits
+
+- Cat sprites from the **Gray Cat Asset Pack**.

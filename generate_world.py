@@ -21,12 +21,36 @@ WEATHER_ANIMATIONS = {
 }
 
 class AssetLoader:
-    """Loads SVG files and strips outer tags to prepare them for <defs> insertion."""
+    """Loads SVG and PNG files and prepares them for <defs> insertion."""
     
     @staticmethod
-    def load_asset(filepath):
+    def load_asset(name, filepath):
         if not os.path.exists(filepath):
             return ""
+            
+        if filepath.lower().endswith(".png"):
+            import base64
+            with open(filepath, "rb") as f:
+                data = f.read()
+            b64_data = base64.b64encode(data).decode('utf-8')
+            width = int.from_bytes(data[16:20], byteorder='big')
+            height = int.from_bytes(data[20:24], byteorder='big')
+            
+            # Assume each frame is a square (e.g. 32x32 for height=32)
+            frame_width = height
+            frames = width // frame_width
+            
+            values = ";".join([str(-i * frame_width) for i in range(frames)])
+            
+            # Wrap PNG in an animated SVG group
+            return f'''<g id="{name}" transform="scale(2)">
+    <svg width="{frame_width}" height="{frame_width}" viewBox="0 0 {frame_width} {frame_width}">
+        <image href="data:image/png;base64,{b64_data}" width="{width}" height="{height}">
+            <animate attributeName="x" values="{values}" dur="0.8s" calcMode="discrete" repeatCount="indefinite"/>
+        </image>
+    </svg>
+</g>'''
+
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
         match = re.search(r'<svg[^>]*>(.*?)</svg>', content, re.IGNORECASE | re.DOTALL)
@@ -42,7 +66,7 @@ class AssetRegistry:
         self.loader = AssetLoader()
         
     def load(self, name, filepath):
-        content = self.loader.load_asset(filepath)
+        content = self.loader.load_asset(name, filepath)
         if content:
             self.assets[name] = content
             return True
@@ -344,7 +368,24 @@ def generate_svg():
 
     registry = AssetRegistry()
     
-    registry.load(f"{character}_{mood}", os.path.join(ASSETS_DIR, "characters", character, f"{mood}.svg"))
+    # Map moods to sprite files based on Gray Cat Asset Pack requirements
+    mood_to_sprite = {
+        "happy": "idle.png",
+        "sleepy": "idle.png",
+        "hungry": "walk.png",
+        "scared": "run.png"
+    }
+    
+    # Fallback to existing SVG if PNG doesn't exist (for other characters/moods)
+    sprite_file = mood_to_sprite.get(mood, f"{mood}.svg")
+    sprite_path = os.path.join(ASSETS_DIR, "characters", character, sprite_file)
+    
+    # If the mapped PNG doesn't exist, try falling back to the default SVG
+    if not os.path.exists(sprite_path) and sprite_file.endswith(".png"):
+        sprite_path = os.path.join(ASSETS_DIR, "characters", character, f"{mood}.svg")
+        
+    registry.load(f"{character}_{mood}", sprite_path)
+    
     registry.load("forest_tree", os.path.join(ASSETS_DIR, "biomes", biome, "tree.svg"))
     
     registry.load("weather_cloud", os.path.join(ASSETS_DIR, "weather", "cloud.svg"))
