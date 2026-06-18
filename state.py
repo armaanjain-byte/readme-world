@@ -2,7 +2,6 @@ import json
 import os
 import random
 from datetime import datetime, timezone
-import artifact_manager
 
 DEFAULT_STATE_FILE = "default_state.json"
 
@@ -14,13 +13,26 @@ WEATHER_PROBS = {
     "snow": 0.01
 }
 
+def _ensure_output_dir():
+    if not os.path.exists("generated"):
+        os.makedirs("generated")
+
 def load_state():
     """Load state from output, fallback to initialization if missing/corrupt."""
-    return artifact_manager.load_state(initialize_state)
+    _ensure_output_dir()
+    if os.path.exists("generated/state.json"):
+        try:
+            with open("generated/state.json", "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return initialize_state()
 
 def save_state(state):
     """Save the current state to output."""
-    artifact_manager.save_state(state)
+    _ensure_output_dir()
+    with open("generated/state.json", "w") as f:
+        json.dump(state, f, indent=2)
 
 def initialize_state():
     """Initialize state from default_state.json, or fallback to hardcoded defaults."""

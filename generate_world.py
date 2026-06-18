@@ -1,10 +1,9 @@
 import os
 import json
 import yaml
-import re
 
 CONFIG_FILE = "world.config.yml"
-ASSETS_DIR = "assets"
+OUTPUT_DIR = "generated"
 
 MOOD_ANIMATIONS = {
     "happy": "anim-bounce",
@@ -20,63 +19,6 @@ WEATHER_ANIMATIONS = {
     "lightning": "anim-lightning"
 }
 
-class AssetLoader:
-    """Loads SVG and PNG files and prepares them for <defs> insertion."""
-    
-    @staticmethod
-    def load_asset(name, filepath):
-        if not os.path.exists(filepath):
-            return ""
-            
-        if filepath.lower().endswith(".png"):
-            import base64
-            with open(filepath, "rb") as f:
-                data = f.read()
-            b64_data = base64.b64encode(data).decode('utf-8')
-            width = int.from_bytes(data[16:20], byteorder='big')
-            height = int.from_bytes(data[20:24], byteorder='big')
-            
-            # Assume each frame is a square (e.g. 32x32 for height=32)
-            frame_width = height
-            frames = width // frame_width
-            
-            values = ";".join([str(-i * frame_width) for i in range(frames)])
-            # Wrap PNG in an animated group
-            return f'''<g id="{name}" transform="scale(2)">
-    <image href="data:image/png;base64,{b64_data}" width="{width}" height="{height}">
-        <animate attributeName="x" values="{values}" dur="0.8s" calcMode="discrete" repeatCount="indefinite"/>
-    </image>
-</g>'''
-
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-        match = re.search(r'<svg[^>]*>(.*?)</svg>', content, re.IGNORECASE | re.DOTALL)
-        if match:
-            return match.group(1).strip()
-        return content.strip()
-
-class AssetRegistry:
-    """Manages loaded assets and generates the SVG <defs> block."""
-    
-    def __init__(self):
-        self.assets = {}
-        self.loader = AssetLoader()
-        
-    def load(self, name, filepath):
-        content = self.loader.load_asset(name, filepath)
-        if content:
-            self.assets[name] = content
-            return True
-        return False
-        
-    def get_defs_block(self):
-        defs = ["<defs>"]
-        for content in self.assets.values():
-            defs.append(content)
-        defs.append("</defs>")
-        return "\n".join(defs)
-
-
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
@@ -84,6 +26,7 @@ def load_config():
     return {}
 
 from state import load_state
+from sprite_loader import load_character, load_biome_asset, load_weather_asset, build_defs
 
 def get_weather_colors(weather):
     if weather == "clear":
@@ -202,65 +145,52 @@ def generate_css():
 </style>
 '''
 
-def render_animated_asset(registry, asset_id, x, y, anim_class=None):
+def render_animated_asset(asset_id, x, y, anim_class=None):
     """Renders a loaded asset, optionally applying a CSS animation class."""
-    if asset_id not in registry.assets:
-        return ""
-        
     if anim_class:
-        # Wrap the <use> in translation and animation groups
         return f'<g transform="translate({x}, {y})"><g class="{anim_class}"><use href="#{asset_id}" /></g></g>'
     else:
         return f'<use href="#{asset_id}" x="{x}" y="{y}" />'
 
-
-def render_background(weather, registry):
+def render_background(weather, has_tree):
     colors = get_weather_colors(weather)
     sky = f'<rect id="sky" x="0" y="0" width="800" height="300" fill="{colors["sky"]}" />'
     ground = f'<rect id="ground" x="0" y="240" width="800" height="60" fill="{colors["ground"]}" />'
     
     trees = []
-    if "forest_tree" in registry.assets:
-        # Give trees a subtle sway
-        trees.append(render_animated_asset(registry, "forest_tree", 80, 168, "anim-sway"))
-        trees.append(render_animated_asset(registry, "forest_tree", 350, 168, "anim-sway"))
-        trees.append(render_animated_asset(registry, "forest_tree", 650, 168, "anim-sway"))
+    if has_tree:
+        trees.append(render_animated_asset("forest_tree", 80, 168, "anim-sway"))
+        trees.append(render_animated_asset("forest_tree", 350, 168, "anim-sway"))
+        trees.append(render_animated_asset("forest_tree", 650, 168, "anim-sway"))
     
     return f"{sky}\n{ground}\n" + "\n".join(trees)
 
-def render_weather(weather, registry):
+def render_weather(weather):
     elements = []
     
     if weather in ["cloudy", "rain", "storm", "snow"]:
         anim = WEATHER_ANIMATIONS.get("cloud")
-        elements.append(render_animated_asset(registry, "weather_cloud", 100, 20, anim))
-        elements.append(render_animated_asset(registry, "weather_cloud", 400, 40, anim))
-        elements.append(render_animated_asset(registry, "weather_cloud", 600, 10, anim))
+        elements.append(render_animated_asset("weather_cloud", 100, 20, anim))
+        elements.append(render_animated_asset("weather_cloud", 400, 40, anim))
+        elements.append(render_animated_asset("weather_cloud", 600, 10, anim))
     
     if weather == "rain":
         anim = WEATHER_ANIMATIONS.get("rain")
-        elements.append(render_animated_asset(registry, "weather_rain_overlay", 0, 0, anim))
+        elements.append(render_animated_asset("weather_rain", 0, 0, anim))
             
     if weather == "storm":
         anim_rain = WEATHER_ANIMATIONS.get("rain")
         anim_lightning = WEATHER_ANIMATIONS.get("lightning")
-        elements.append(render_animated_asset(registry, "weather_storm_overlay", 0, 0, anim_rain))
-        # Add lightning flash spanning the screen
+        elements.append(render_animated_asset("weather_storm", 0, 0, anim_rain))
         elements.append(f'<rect x="0" y="0" width="800" height="300" fill="#ffffff" class="{anim_lightning}" pointer-events="none" />')
     
     if weather == "snow":
         anim = WEATHER_ANIMATIONS.get("snow")
-        elements.append(render_animated_asset(registry, "weather_snow_overlay", 0, 0, anim))
+        elements.append(render_animated_asset("weather_snow", 0, 0, anim))
 
     return "\n".join(elements)
 
-def render_pet(character, mood, registry):
-    if mood not in ["happy", "sleepy", "hungry", "scared"]:
-        if mood == "sad":
-            mood = "scared"
-        else:
-            mood = "happy"
-            
+def render_pet(character, mood):
     asset_id = f"{character}_{mood}"
     anim_class = MOOD_ANIMATIONS.get(mood)
     
@@ -270,15 +200,12 @@ def render_pet(character, mood, registry):
     elif mood == "hungry" and character == "dog":
         y_pos += 4
         
-    return render_animated_asset(registry, asset_id, 400, y_pos, anim_class)
+    return render_animated_asset(asset_id, 400, y_pos, anim_class)
 
 from security import escape_svg_text
 
-def render_ui(name, weather, character, state, registry):
+def render_ui(name, weather, character, state):
     ui_elements = ['<g id="ui" transform="translate(10, 10)">']
-    
-    # We will use a larger UI panel or multiple rects for layout.
-    # We'll use a single wide translucent black rect.
     ui_elements.append('<rect x="0" y="0" width="780" height="90" fill="#000000" opacity="0.6" rx="5" />')
         
     safe_name = escape_svg_text(name)
@@ -362,43 +289,16 @@ def generate_svg():
     pet_state = state.get("pet", {})
     mood = pet_state.get("mood", "happy")
     
-    # Normalize mood to match available assets, mirroring render_pet logic
     if mood not in ["happy", "sleepy", "hungry", "scared"]:
         mood = "scared" if mood == "sad" else "happy"
         
-    recent_events = state.get("recent_events", [])
-
-    registry = AssetRegistry()
+    # Load assets
+    char_fragment = load_character(character, mood)
+    tree_fragment = load_biome_asset(biome, "tree")
+    cloud_fragment = load_weather_asset("cloud")
+    weather_fragment = load_weather_asset(weather) if weather != "clear" else ""
     
-    # Map moods to sprite files based on Gray Cat Asset Pack requirements
-    mood_to_sprite = {
-        "happy": "idle.png",
-        "sleepy": "idle.png",
-        "hungry": "walk.png",
-        "scared": "run.png"
-    }
-    
-    # Fallback to existing SVG if PNG doesn't exist (for other characters/moods)
-    sprite_file = mood_to_sprite.get(mood, f"{mood}.svg")
-    sprite_path = os.path.join(ASSETS_DIR, "characters", character, sprite_file)
-    
-    # If the mapped PNG doesn't exist, try falling back to the default SVG
-    if not os.path.exists(sprite_path) and sprite_file.endswith(".png"):
-        sprite_path = os.path.join(ASSETS_DIR, "characters", character, f"{mood}.svg")
-        
-    registry.load(f"{character}_{mood}", sprite_path)
-    
-    registry.load("forest_tree", os.path.join(ASSETS_DIR, "biomes", biome, "tree.svg"))
-    
-    registry.load("weather_cloud", os.path.join(ASSETS_DIR, "weather", "cloud.svg"))
-    if weather == "rain":
-        registry.load("weather_rain_overlay", os.path.join(ASSETS_DIR, "weather", "rain_overlay.svg"))
-    elif weather == "storm":
-        registry.load("weather_storm_overlay", os.path.join(ASSETS_DIR, "weather", "storm_overlay.svg"))
-    elif weather == "snow":
-        registry.load("weather_snow_overlay", os.path.join(ASSETS_DIR, "weather", "snow_overlay.svg"))
-        
-    registry.load("ui_panel", os.path.join(ASSETS_DIR, "ui", "panel.svg"))
+    defs = build_defs(char_fragment, tree_fragment, cloud_fragment, weather_fragment)
 
     svg_open = '<svg width="100%" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" image-rendering="pixelated">'
     svg_close = '</svg>'
@@ -406,16 +306,20 @@ def generate_svg():
     content = "\n".join([
         svg_open,
         generate_css(),
-        registry.get_defs_block(),
-        render_background(weather, registry),
-        render_weather(weather, registry),
-        render_pet(character, mood, registry),
-        render_ui(name, weather, character, state, registry),
+        defs,
+        render_background(weather, bool(tree_fragment)),
+        render_weather(weather),
+        render_pet(character, mood),
+        render_ui(name, weather, character, state),
         svg_close
     ])
 
-    import artifact_manager
-    artifact_manager.save_world_svg(content)
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        
+    with open(os.path.join(OUTPUT_DIR, "world.svg"), "w", encoding="utf-8") as f:
+        f.write(content)
+        
     print(f"Generated world.svg with weather: {weather}, character: {character}, mood: {mood}, biome: {biome}")
 
 if __name__ == "__main__":

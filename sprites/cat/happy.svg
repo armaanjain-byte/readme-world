@@ -1,0 +1,9 @@
+<g id="cat_happy" transform="scale(2)">
+    <rect x="0" y="8" width="12" height="6" fill="#f4a460"/>
+    <rect x="2" y="14" width="2" height="2" fill="#f4a460"/>
+    <rect x="8" y="14" width="2" height="2" fill="#f4a460"/>
+    <rect x="10" y="4" width="6" height="6" fill="#f4a460"/>
+    <rect x="10" y="2" width="2" height="2" fill="#f4a460"/>
+    <rect x="14" y="2" width="2" height="2" fill="#f4a460"/>
+    <rect x="0" y="4" width="2" height="4" fill="#f4a460"/> <!-- tail up -->
+</g>
