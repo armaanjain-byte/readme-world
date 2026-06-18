@@ -61,3 +61,6 @@ jobs:
           git add state.json world.svg
           git commit -m "Update world state and SVG from comment interaction" || true
           git push origin HEAD:output
+
+      - name: Purge Camo image cache
+        uses: kevincobain2000/action-camo-purge@v1

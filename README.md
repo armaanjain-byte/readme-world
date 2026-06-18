@@ -1,6 +1,6 @@
 # Readme World
 
-![World](output/world.svg)
+![World](https://raw.githubusercontent.com/armaanjain-byte/readme-world/output/world.svg)
 
 Use Issue #1 to interact with the pet.
 
