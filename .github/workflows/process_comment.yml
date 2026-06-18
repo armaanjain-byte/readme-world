@@ -40,14 +40,18 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           
           # Stash generated artifacts
-          cp output/state.json /tmp/state.json
-          cp output/world.svg /tmp/world.svg
+          cp generated/state.json /tmp/state.json
+          cp generated/world.svg /tmp/world.svg
           
           # Fetch and checkout output branch
           git fetch origin output || true
-          git checkout output || git checkout --orphan output
+          if git ls-remote --exit-code --heads origin output; then
+            git checkout -B output origin/output
+          else
+            git checkout --orphan output
+          fi
           
-          # Clear existing tracked files if it was an orphan branch to ensure clean history
+          # Clear existing tracked files if it was an orphan branch or cleanly reset to root
           git rm -rf . || true
           
           # Restore artifacts to the root of the output branch
