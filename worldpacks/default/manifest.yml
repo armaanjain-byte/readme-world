@@ -1,0 +1,69 @@
+name: "Default World"
+version: "1.0"
+
+# Actor placement — where the character sprite renders
+actor:
+  x: 400
+  y: 210
+
+# Sprite paths relative to repo root — one per mood
+sprites:
+  happy: sprites/cat/happy.svg
+  sleepy: sprites/cat/sleepy.svg
+  hungry: sprites/cat/hungry.svg
+  scared: sprites/cat/scared.svg
+
+# Gift definitions — keys are gift names, values are stat effects
+gifts:
+  fish:
+    hunger: -20
+    friendship: 10
+    mood: happy
+  wool:
+    energy: -5
+    friendship: 5
+    mood: happy
+  ball:
+    energy: -10
+    friendship: 3
+  bone:
+    friendship: 1
+
+# Weather definitions — each key is a weather type
+weather:
+  clear:
+    sky: "#87CEEB"
+    ground: "#4a7c3f"
+  cloudy:
+    sky: "#B0C4DE"
+    ground: "#4a7c3f"
+  rain:
+    sky: "#708090"
+    ground: "#3a5c2f"
+    overlay: weather/rain.svg
+  storm:
+    sky: "#2F4F4F"
+    ground: "#2a4a2a"
+    overlay: weather/storm.svg
+    lightning: true
+  snow:
+    sky: "#E0FFFF"
+    ground: "#e0e0e0"
+    overlay: weather/snow.svg
+
+# Clouds — shown for non-clear weather
+clouds:
+  asset: weather/cloud.svg
+  positions:
+    - { x: 100, y: 20 }
+    - { x: 400, y: 40 }
+    - { x: 600, y: 10 }
+
+# Biome props — decorations placed in the scene
+biome:
+  props:
+    - asset: biomes/forest/tree.svg
+      positions:
+        - { x: 80, y: 168, anim: "anim-sway" }
+        - { x: 350, y: 168, anim: "anim-sway" }
+        - { x: 650, y: 168, anim: "anim-sway" }

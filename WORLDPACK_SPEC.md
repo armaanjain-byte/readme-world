@@ -1,93 +1,69 @@
-# World Pack Specification
+# WorldPack Specification
 
-The README World Engine is transitioning from a hardcoded single-pet application into a generic execution environment. A **World Pack** defines all the visual assets, configuration, and structural constraints independently of the Python execution engine.
+A WorldPack is a directory containing a `manifest.yml` and associated SVG assets. It defines everything needed to render a world and calculate interactions.
 
-The engine must **never** contain hardcoded strings referencing specific species (e.g., `if character == "cat"`), specific items (e.g., `gift_type == "wool"`), or specific biomes (`if biome == "forest"`).
-
-## 1. Directory Structure
-
-A compliant World Pack MUST contain the following root elements:
-
-```text
-/manifest.yml
-/sprites/
-  /{character_name}/
-    happy.svg
-    sleepy.svg
-    hungry.svg
-    scared.svg
-/biomes/
-  /{biome_name}/
-    tree.svg
-    mushroom.svg
-    ... (arbitrary scene props)
-/weather/
-  cloud.svg
-  rain.svg
-  snow.svg
-  storm.svg
-/ui/
-  panel.svg
+## Directory Structure
 ```
+worldpacks/
+  my_world/
+    manifest.yml
+    assets/
+      idle.svg
+      ...
+```
+*Note: Asset paths inside the manifest are relative to the repository root, so you can share assets across packs.*
 
-## 2. The `manifest.yml` Contract
+## SVG Asset Requirements
+Currently, the engine expects **SVG Fragments**.
+These are bare `<g>` tags without the outer `<svg>` wrapper or `<?xml>` declaration.
 
-The manifest defines the interaction rules and metadata for the entire world. The engine consumes this document dynamically.
+*Future-proofing note: The architecture is designed so that future PNG support or full SVG support can be handled entirely within `worldpack_loader.py` without touching the renderer.*
+
+## Manifest Schema
 
 ```yaml
+name: "World Name"
 version: "1.0"
-world:
-  name: "Traveller's Realm"
-  default_biome: "forest"
 
-characters:
-  cat:
-    display_name: "Orange Tabby"
-    gifts:
-      # Item ID -> Effects mapping
-      fish:
-        hunger: -20
-        friendship: 10
-        mood: "happy"
-      wool:
-        energy: -5
-        friendship: 5
-        mood: "happy"
-      bone:
-        friendship: 1
-  dog:
-    display_name: "Golden Retriever"
-    gifts:
-      bone:
-        friendship: 10
-        mood: "happy"
-      ball:
-        energy: -10
-        friendship: 8
+# Actor placement
+actor:
+  x: 400
+  y: 210
 
-biomes:
-  forest:
-    sky_color: "#87CEEB"
-    ground_color: "#4a7c3f"
-    props:
-      # Prop name, coordinates, and CSS animation class
-      - name: "tree"
-        x: 80
-        y: 168
-        anim: "anim-sway"
-      - name: "tree"
-        x: 350
-        y: 168
-        anim: "anim-sway"
+# Actor sprites (must provide at least happy, sleepy, hungry, scared)
+sprites:
+  happy: path/to/happy.svg
+  sleepy: path/to/sleepy.svg
+  hungry: path/to/hungry.svg
+  scared: path/to/scared.svg
+
+# Interactions
+gifts:
+  item_name:
+    hunger: -20         # Optional delta
+    energy: 5           # Optional delta
+    friendship: 10      # Optional delta
+    mood: happy         # Optional override
+
+# Environment
+weather:
+  clear:
+    sky: "#hexcode"
+    ground: "#hexcode"
+  rain:
+    sky: "#hexcode"
+    ground: "#hexcode"
+    overlay: path/to/rain_overlay.svg
+    lightning: false    # If true, enables flash animation
+
+clouds:
+  asset: path/to/cloud.svg
+  positions:
+    - { x: 100, y: 20 }
+
+biome:
+  props:
+    - asset: path/to/prop.svg
+      positions:
+        - { x: 80, y: 168, anim: "anim-sway" }
 ```
-
-## 3. Dynamic Rendering Expectations
-
-When `generate_world.py` runs, it must perform the following algorithm instead of relying on hardcoded coordinates:
-
-1. **Read `manifest.yml`** to determine the current `biome` and background colors.
-2. **Iterate `props`** array inside the biome definition to loop through `<use>` tags dynamically.
-3. **Parse interactions:** When an event like `/gift fish` arrives, the `event_processor` must look up `characters -> [current_character] -> gifts -> fish` in the YAML to calculate state mutations. No hardcoded logic allowed in Python.
-
-## 4. SVG Constraints
-All SVGs within the World Pack must strictly adhere to the fragment protocol (bare `<g>` tags with explicitly named IDs tracking their path, e.g., `cat_happy` or `forest_tree`). No nested `<svg>` boilerplate is allowed.

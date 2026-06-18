@@ -2,5 +2,4 @@
 # Edit these values manually or run: python setup.py
 
 name: Armaan
-character: cat
-biome: forest
+worldpack: worldpacks/default

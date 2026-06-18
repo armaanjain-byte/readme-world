@@ -48,7 +48,6 @@ def initialize_state():
         state = {
             "weather": "clear",
             "pet": {
-                "species": "cat",
                 "mood": "happy",
                 "energy": 100,
                 "hunger": 0,
@@ -146,8 +145,24 @@ def apply_pet_interaction(state, user):
     _increase_user_friendship(state, user, 2)
     _append_event(state, "pet", user)
 
+def _get_manifest():
+    import yaml
+    from worldpack_loader import load_manifest
+    worldpack_path = "worldpacks/default"
+    if os.path.exists("world.config.yml"):
+        try:
+            with open("world.config.yml", "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f) or {}
+                worldpack_path = cfg.get("worldpack", worldpack_path)
+        except Exception:
+            pass
+    try:
+        return load_manifest(worldpack_path)
+    except Exception:
+        return {}
+
 def apply_gift_interaction(state, gift_type, user):
-    """Apply a gift interaction to state using species-aware logic."""
+    """Apply a gift interaction to state using manifest logic."""
     state["recent_action"] = f"gift_{gift_type}"
     state["recent_user"] = user
     state["thank_you_cycles"] = 2
@@ -155,35 +170,24 @@ def apply_gift_interaction(state, gift_type, user):
     state["gifted_by"] = user
     
     pet = state.setdefault("pet", {})
-    species = pet.get("species", "cat")
-    friendship_gain = 0
+    manifest = _get_manifest()
+    from worldpack_loader import get_gift_effects
+    effects = get_gift_effects(manifest, gift_type) or {}
     
-    if species == "cat":
-        if gift_type == "fish":
-            pet["hunger"] = max(0, pet.get("hunger", 0) - 20)
-            friendship_gain = 10
-            pet["mood"] = "happy"
-        elif gift_type == "wool":
-            pet["energy"] = max(0, pet.get("energy", 100) - 5)
-            friendship_gain = 5
-            pet["mood"] = "happy"
-        elif gift_type == "ball":
-            pet["energy"] = max(0, pet.get("energy", 100) - 10)
-            friendship_gain = 3
-        elif gift_type == "bone":
-            friendship_gain = 1
-            
-    elif species == "dog":
-        if gift_type == "bone":
-            friendship_gain = 10
-            pet["mood"] = "happy"
-        elif gift_type == "ball":
-            pet["energy"] = max(0, pet.get("energy", 100) - 10)
-            friendship_gain = 8
-        elif gift_type == "fish":
-            friendship_gain = 3
-        elif gift_type == "wool":
-            friendship_gain = 1
+    # Apply stats generically from manifest
+    friendship_gain = effects.get("friendship", 0)
+    
+    hunger_delta = effects.get("hunger", 0)
+    if hunger_delta:
+        pet["hunger"] = max(0, min(100, pet.get("hunger", 0) + hunger_delta))
+        
+    energy_delta = effects.get("energy", 0)
+    if energy_delta:
+        pet["energy"] = max(0, min(100, pet.get("energy", 100) + energy_delta))
+        
+    mood_override = effects.get("mood")
+    if mood_override:
+        pet["mood"] = mood_override
 
     pet["friendship"] = min(100, pet.get("friendship", 0) + friendship_gain)
     _increase_user_friendship(state, user, friendship_gain)

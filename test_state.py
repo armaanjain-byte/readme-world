@@ -49,7 +49,6 @@ class TestStateManagement(unittest.TestCase):
         os.remove(DEFAULT_STATE_FILE) # remove the one created in setUp
         state = initialize_state()
         self.assertEqual(state["weather"], "clear")
-        self.assertEqual(state["pet"]["species"], "cat")
         self.assertEqual(state["pet"]["energy"], 100)
 
     def test_initialize_state_with_default(self):
@@ -65,7 +64,7 @@ class TestStateManagement(unittest.TestCase):
             
         state = initialize_state()
         self.assertEqual(state["weather"], "rain")
-        self.assertEqual(state["pet"]["species"], "dog")
+        self.assertEqual(state["pet"]["mood"], "happy")
 
     def test_load_and_save_state(self):
         state = initialize_state()

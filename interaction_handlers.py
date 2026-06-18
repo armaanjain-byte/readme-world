@@ -12,15 +12,18 @@ class PetCommand(Command):
 
 class GiftCommand(Command):
     """Handles the /gift command."""
-    VALID_GIFTS = ["wool", "fish", "bone", "ball"]
     
     def validate(self, context: CommandContext) -> tuple[bool, str]:
+        manifest = state_module._get_manifest()
+        from worldpack_loader import get_valid_gifts
+        valid_gifts = get_valid_gifts(manifest)
+        
         if len(context.args) < 2:
-            return False, "Missing gift item. Usage: /gift [wool|fish|bone|ball]"
+            return False, f"Missing gift item. Usage: /gift [{'|'.join(valid_gifts)}]"
         
         gift = context.args[1].lower()
-        if gift not in self.VALID_GIFTS:
-            return False, f"Invalid gift. Must be one of {', '.join(self.VALID_GIFTS)}."
+        if gift not in valid_gifts:
+            return False, f"Invalid gift. Must be one of {', '.join(valid_gifts)}."
             
         return True, ""
         
@@ -31,18 +34,21 @@ class GiftCommand(Command):
 
 class WeatherCommand(Command):
     """Handles the /weather command (Owner only)."""
-    VALID_WEATHER = ["clear", "rain", "storm", "snow"]
     
     def validate(self, context: CommandContext) -> tuple[bool, str]:
         if not context.is_owner:
             return False, "Only the owner can change the weather."
             
+        manifest = state_module._get_manifest()
+        from worldpack_loader import get_available_weather
+        valid_weather = get_available_weather(manifest)
+            
         if len(context.args) < 2:
-            return False, "Missing weather state. Usage: /weather [clear|rain|storm|snow]"
+            return False, f"Missing weather state. Usage: /weather [{'|'.join(valid_weather)}]"
             
         weather = context.args[1].lower()
-        if weather not in self.VALID_WEATHER:
-            return False, f"Invalid weather. Must be one of {', '.join(self.VALID_WEATHER)}."
+        if weather not in valid_weather:
+            return False, f"Invalid weather. Must be one of {', '.join(valid_weather)}."
             
         return True, ""
         

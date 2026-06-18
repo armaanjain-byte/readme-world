@@ -22,8 +22,7 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertEqual(self.state["pet"]["mood"], "happy")
         self.assertEqual(self.state["friendship_log"]["octocat"], 2) # Base score for pet
 
-    def test_cat_gift_reactions(self):
-        self.state["pet"]["species"] = "cat"
+    def test_gift_reactions(self):
         self.state["pet"]["hunger"] = 100
         
         # Give Fish
@@ -52,34 +51,6 @@ class TestInteractionEngine(unittest.TestCase):
         self.assertEqual(self.state["pet"]["friendship"], 16) # 15 + 1
         self.assertEqual(self.state["friendship_log"]["alice"], 11) # 10 + 1
 
-    def test_dog_gift_reactions(self):
-        self.state["pet"]["species"] = "dog"
-        
-        # Give Bone
-        self.state["cooldowns"] = {}
-        success, msg = parse_and_execute("/gift bone", "charlie", False, self.state, self.registry)
-        self.assertTrue(success)
-        self.assertEqual(self.state["last_gift"], "bone")
-        self.assertEqual(self.state["gifted_by"], "charlie")
-        self.assertEqual(self.state["pet"]["friendship"], 10)
-        self.assertEqual(self.state["pet"]["mood"], "happy")
-        self.assertEqual(self.state["friendship_log"]["charlie"], 10)
-
-        # Give Ball
-        self.state["pet"]["energy"] = 100
-        self.state["cooldowns"] = {}
-        success, msg = parse_and_execute("/gift ball", "charlie", False, self.state, self.registry)
-        self.assertTrue(success)
-        self.assertEqual(self.state["pet"]["energy"], 90)
-        self.assertEqual(self.state["pet"]["friendship"], 18) # 10 + 8
-        self.assertEqual(self.state["friendship_log"]["charlie"], 18) # 10 + 8
-
-        # Give Wool (minimal effect for dog)
-        self.state["cooldowns"] = {}
-        success, msg = parse_and_execute("/gift wool", "diana", False, self.state, self.registry)
-        self.assertTrue(success)
-        self.assertEqual(self.state["pet"]["friendship"], 19) # 18 + 1
-        self.assertEqual(self.state["friendship_log"]["diana"], 1)
 
     def test_guest_friendship_ignored(self):
         success, msg = parse_and_execute("/pet", "guest", False, self.state, self.registry)
