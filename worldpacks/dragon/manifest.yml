@@ -1,0 +1,53 @@
+actor:
+  x: 200
+  y: 100
+
+sprites:
+  happy: worldpacks/dragon/sprites/dragon/happy.svg
+  sleepy: worldpacks/dragon/sprites/dragon/sleepy.svg
+  hungry: worldpacks/dragon/sprites/dragon/hungry.svg
+  scared: worldpacks/dragon/sprites/dragon/scared.svg
+
+gifts:
+  gold:
+    hunger: -20
+    energy: 10
+    friendship: 20
+    mood: happy
+  meat:
+    hunger: -50
+    energy: 20
+    friendship: 5
+    mood: sleepy
+  sword:
+    hunger: 0
+    energy: -10
+    friendship: -50
+    mood: scared
+
+weather:
+  clear:
+    sky: "#1a1a1a"
+    ground: "#4a0000"
+  firestorm:
+    sky: "#ff0000"
+    ground: "#220000"
+    overlay: worldpacks/dragon/weather/fire.svg
+    lightning: true
+
+clouds:
+  asset: worldpacks/dragon/biomes/mountain/peak.svg
+  positions:
+    - x: 50
+      y: 50
+    - x: 400
+      y: 80
+
+biome:
+  props:
+    - asset: worldpacks/dragon/biomes/mountain/peak.svg
+      x: 100
+      y: 150
+    - asset: worldpacks/dragon/biomes/mountain/peak.svg
+      x: 600
+      y: 150

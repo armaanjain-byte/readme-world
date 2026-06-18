@@ -1,5 +1,2 @@
-# readme-world configuration
-# Edit these values manually or run: python setup.py
-
-name: Armaan
-worldpack: worldpacks/default
+name: CyberUser
+worldpack: worldpacks/cybercity

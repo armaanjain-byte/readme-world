@@ -1,14 +1,14 @@
 import unittest
 import os
 import json
-from state import initialize_state, save_state
+import state
 from event_processor import process_comment
 
 class TestEventProcessor(unittest.TestCase):
     def setUp(self):
         # Reset state to default before each test
-        state = initialize_state()
-        save_state(state)
+        self.state = state.initialize_state()
+        state.save_state(self.state)
         
     def test_successful_pet_comment(self):
         result = process_comment("/pet", "testuser")
@@ -17,10 +17,10 @@ class TestEventProcessor(unittest.TestCase):
         self.assertEqual(result["user"], "testuser")
         
         # Verify state mutated
-        with open("generated/state.json", "r") as f:
-            state = json.load(f)
-        self.assertEqual(state["recent_action"], "pet")
-        self.assertEqual(state["recent_user"], "testuser")
+        with open(state.STATE_FILE, "r") as f:
+            saved_state = json.load(f)
+        self.assertEqual(saved_state["recent_action"], "pet")
+        self.assertEqual(saved_state["recent_user"], "testuser")
         
         # Verify SVG generated
         self.assertTrue(os.path.exists("generated/world.svg"))
@@ -46,9 +46,9 @@ class TestEventProcessor(unittest.TestCase):
         self.assertEqual(result["command"], "weather")
         
         # Verify state mutated
-        with open("generated/state.json", "r") as f:
-            state = json.load(f)
-        self.assertEqual(state["weather"], "storm")
+        with open(state.STATE_FILE, "r") as f:
+            saved_state = json.load(f)
+        self.assertEqual(saved_state["weather"], "storm")
         
 if __name__ == '__main__':
     unittest.main()

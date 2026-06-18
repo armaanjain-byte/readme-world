@@ -1,0 +1,6 @@
+<g id="robot_sleepy" transform="scale(2)">
+  <rect x="0" y="0" width="20" height="20" fill="#005500"/>
+  <rect x="4" y="8" width="4" height="2" fill="#000000"/>
+  <rect x="12" y="8" width="4" height="2" fill="#000000"/>
+  <rect x="4" y="14" width="12" height="2" fill="#000000"/>
+</g>

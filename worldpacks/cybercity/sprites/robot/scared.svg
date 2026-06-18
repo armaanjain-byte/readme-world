@@ -1,0 +1,6 @@
+<g id="robot_scared" transform="scale(2)">
+  <rect x="0" y="0" width="20" height="20" fill="#ff0000"/>
+  <rect x="4" y="4" width="4" height="6" fill="#000000"/>
+  <rect x="12" y="4" width="4" height="6" fill="#000000"/>
+  <rect x="8" y="14" width="4" height="4" fill="#000000"/>
+</g>

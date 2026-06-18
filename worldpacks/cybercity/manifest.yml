@@ -1,0 +1,50 @@
+actor:
+  x: 450
+  y: 180
+
+sprites:
+  happy: worldpacks/cybercity/sprites/robot/happy.svg
+  sleepy: worldpacks/cybercity/sprites/robot/sleepy.svg
+  hungry: worldpacks/cybercity/sprites/robot/hungry.svg
+  scared: worldpacks/cybercity/sprites/robot/scared.svg
+
+gifts:
+  oil:
+    hunger: -50
+    energy: 10
+    friendship: 20
+    mood: happy
+  battery:
+    hunger: -10
+    energy: 50
+    friendship: 30
+    mood: happy
+  virus:
+    hunger: 0
+    energy: -50
+    friendship: -100
+    mood: scared
+
+weather:
+  clear:
+    sky: "#000022"
+    ground: "#111111"
+  smog:
+    sky: "#111100"
+    ground: "#222222"
+    overlay: worldpacks/cybercity/weather/smog.svg
+
+clouds:
+  asset: worldpacks/cybercity/biomes/neon/sign.svg
+  positions:
+    - x: 200
+      y: 50
+
+biome:
+  props:
+    - asset: worldpacks/cybercity/biomes/neon/sign.svg
+      x: 150
+      y: 120
+    - asset: worldpacks/cybercity/biomes/neon/sign.svg
+      x: 650
+      y: 120

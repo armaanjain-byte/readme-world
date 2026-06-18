@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timezone
 
 DEFAULT_STATE_FILE = "default_state.json"
+STATE_FILE = "generated/state.json"
 
 WEATHER_PROBS = {
     "clear": 0.70,
@@ -20,9 +21,9 @@ def _ensure_output_dir():
 def load_state():
     """Load state from output, fallback to initialization if missing/corrupt."""
     _ensure_output_dir()
-    if os.path.exists("generated/state.json"):
+    if os.path.exists(STATE_FILE):
         try:
-            with open("generated/state.json", "r") as f:
+            with open(STATE_FILE, "r") as f:
                 return json.load(f)
         except Exception:
             pass
@@ -31,7 +32,7 @@ def load_state():
 def save_state(state):
     """Save the current state to output."""
     _ensure_output_dir()
-    with open("generated/state.json", "w") as f:
+    with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
 def initialize_state():

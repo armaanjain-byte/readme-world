@@ -5,19 +5,17 @@ from state import (
     load_state,
     save_state,
     initialize_state,
-    update_random_world_state,
-    DEFAULT_STATE_FILE
+    update_random_world_state
 )
-
-STATE_FILE = "generated/state.json"
+import state as state_module
 
 class TestStateManagement(unittest.TestCase):
     def setUp(self):
         # Clean up files before each test to ensure a clean state
-        if os.path.exists(STATE_FILE):
-            os.remove(STATE_FILE)
-        if os.path.exists(DEFAULT_STATE_FILE):
-            os.rename(DEFAULT_STATE_FILE, DEFAULT_STATE_FILE + ".bak")
+        if os.path.exists(state_module.STATE_FILE):
+            os.remove(state_module.STATE_FILE)
+        if os.path.exists(state_module.DEFAULT_STATE_FILE):
+            os.rename(state_module.DEFAULT_STATE_FILE, state_module.DEFAULT_STATE_FILE + ".bak")
 
         # Create a mock default_state for testing if needed
         self.mock_default = {
@@ -33,20 +31,20 @@ class TestStateManagement(unittest.TestCase):
             "recent_user": None,
             "thank_you_cycles": 0
         }
-        with open(DEFAULT_STATE_FILE, "w") as f:
+        with open(state_module.DEFAULT_STATE_FILE, "w") as f:
             json.dump(self.mock_default, f)
 
     def tearDown(self):
         # Clean up files after each test
-        if os.path.exists(STATE_FILE):
-            os.remove(STATE_FILE)
-        if os.path.exists(DEFAULT_STATE_FILE):
-            os.remove(DEFAULT_STATE_FILE)
-        if os.path.exists(DEFAULT_STATE_FILE + ".bak"):
-            os.rename(DEFAULT_STATE_FILE + ".bak", DEFAULT_STATE_FILE)
+        if os.path.exists(state_module.STATE_FILE):
+            os.remove(state_module.STATE_FILE)
+        if os.path.exists(state_module.DEFAULT_STATE_FILE):
+            os.remove(state_module.DEFAULT_STATE_FILE)
+        if os.path.exists(state_module.DEFAULT_STATE_FILE + ".bak"):
+            os.rename(state_module.DEFAULT_STATE_FILE + ".bak", state_module.DEFAULT_STATE_FILE)
 
     def test_initialize_state_no_default(self):
-        os.remove(DEFAULT_STATE_FILE) # remove the one created in setUp
+        os.remove(state_module.DEFAULT_STATE_FILE) # remove the one created in setUp
         state = initialize_state()
         self.assertEqual(state["weather"], "clear")
         self.assertEqual(state["pet"]["energy"], 100)
@@ -59,7 +57,7 @@ class TestStateManagement(unittest.TestCase):
             "recent_user": None,
             "thank_you_cycles": 0
         }
-        with open(DEFAULT_STATE_FILE, "w") as f:
+        with open(state_module.DEFAULT_STATE_FILE, "w") as f:
             json.dump(default_state, f)
             
         state = initialize_state()
@@ -71,13 +69,13 @@ class TestStateManagement(unittest.TestCase):
         state["weather"] = "snow"
         save_state(state)
         
-        self.assertTrue(os.path.exists(STATE_FILE))
+        self.assertTrue(os.path.exists(state_module.STATE_FILE))
         
         loaded_state = load_state()
         self.assertEqual(loaded_state["weather"], "snow")
 
     def test_load_corrupt_state(self):
-        with open(STATE_FILE, "w") as f:
+        with open(state_module.STATE_FILE, "w") as f:
             f.write("invalid json {")
             
         # Should fallback to initialized state
@@ -112,7 +110,7 @@ class TestStateManagement(unittest.TestCase):
         state["weather"] = "storm"
         # override random weather to ensure it stays bad for the test
         # or we just monkeypatch the random, but since we are passing state, let's just make
-        # sure we can reach sad state. Actually update_random_world_state will randomly assign weather.
+        # sure we can reach sad state_module. Actually update_random_world_state will randomly assign weather.
         # Let's mock random
         import random
         original_random = random.random
