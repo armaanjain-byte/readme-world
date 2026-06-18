@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [created]
 
+concurrency:
+  group: readme-world-engine
+  cancel-in-progress: false
+
 jobs:
   process-comment:
     runs-on: ubuntu-latest
@@ -85,7 +89,11 @@ jobs:
             echo "No changes to commit — skipping."
           else
             git commit -m "chore(world): update from interaction by ${{ github.event.comment.user.login }}"
-            git push origin HEAD:output
+            
+            # Retry push up to 3 times in case of transient network issues
+            for i in 1 2 3; do
+              git push origin HEAD:output && break || sleep 5
+            done
           fi
 
       # ── Purge Camo image cache (safe, never fails) ─────────────────────────

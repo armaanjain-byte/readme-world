@@ -7,6 +7,10 @@ on:
   # Allow manual triggering from the Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: readme-world-engine
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -109,7 +113,11 @@ jobs:
           else
             TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             git commit -m "chore(world): update world.svg [${TIMESTAMP}]"
-            git push origin output
+            
+            # Retry push up to 3 times in case of transient network issues
+            for i in 1 2 3; do
+              git push origin output && break || sleep 5
+            done
           fi
 
       # ── 10. Purge Camo / GitHub image proxy cache ───────────────────────────
