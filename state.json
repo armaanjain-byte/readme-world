@@ -1,8 +1,8 @@
 {
-  "weather": "clear",
+  "weather": "storm",
   "pet": {
     "species": "cat",
-    "mood": "happy",
+    "mood": "sad",
     "energy": 100,
     "hunger": 0,
     "friendship": 70
@@ -16,6 +16,12 @@
     "armaanjain-byte": 46
   },
   "recent_events": [
+    {
+      "type": "weather",
+      "user": "armaanjain-byte",
+      "timestamp": 1781782436.7228358,
+      "item": "storm"
+    },
     {
       "type": "gift",
       "user": "armaanjain-byte",
