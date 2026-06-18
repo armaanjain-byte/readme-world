@@ -5,7 +5,7 @@
     "mood": "happy",
     "energy": 100,
     "hunger": 0,
-    "friendship": 30
+    "friendship": 40
   },
   "recent_action": "gift_fish",
   "recent_user": "armaanjain-byte",
@@ -13,9 +13,15 @@
   "last_gift": "fish",
   "gifted_by": "armaanjain-byte",
   "friendship_log": {
-    "armaanjain-byte": 14
+    "armaanjain-byte": 24
   },
   "recent_events": [
+    {
+      "type": "gift",
+      "user": "armaanjain-byte",
+      "timestamp": 1781761580.7304547,
+      "item": "fish"
+    },
     {
       "type": "gift",
       "user": "armaanjain-byte",
