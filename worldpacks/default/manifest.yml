@@ -1,5 +1,5 @@
 name: "Default World"
-version: "1.0"
+version: "2.0"
 
 # Actor placement — where the character sprite renders
 actor:
@@ -11,6 +11,7 @@ sprites:
   happy: sprites/cat/happy.svg
   sleepy: sprites/cat/sleepy.svg
   hungry: sprites/cat/hungry.svg
+  # TODO: scared.svg is currently a copy of hungry.svg — a dedicated scared cat asset is needed
   scared: sprites/cat/scared.svg
 
 # Gift definitions — keys are gift names, values are stat effects
@@ -36,23 +37,49 @@ gifts:
     x: 420
     y: 235
 
+# World progression — props unlock as friendship grows
 progression:
   - threshold: 25
     props:
-      - asset: biomes/forest/flower.svg
+      - asset: biomes/forest/grass.svg
         positions:
-          - { x: 120, y: 220, anim: "anim-breathe" }
+          - { x: 500, y: 228 }
   - threshold: 50
     props:
-      - asset: biomes/forest/tree.svg
+      - asset: biomes/forest/plant.svg
         positions:
-          - { x: 550, y: 168, anim: "anim-sway" }
+          - { x: 160, y: 195, anim: "anim-sway" }
+  - threshold: 75
+    props:
+      - asset: biomes/forest/flower_full.svg
+        positions:
+          - { x: 600, y: 210, anim: "anim-breathe" }
   - threshold: 100
+    props:
+      - asset: biomes/forest/bush.svg
+        positions:
+          - { x: 280, y: 208 }
+  - threshold: 150
     props:
       - asset: biomes/forest/pond.svg
         positions:
-          - { x: 200, y: 240 }
-  - threshold: 200
+          - { x: 200, y: 230 }
+  - threshold: 250
+    props:
+      - asset: biomes/forest/fence.svg
+        positions:
+          - { x: 20, y: 215 }
+  - threshold: 350
+    props:
+      - asset: biomes/forest/bench.svg
+        positions:
+          - { x: 700, y: 210 }
+  - threshold: 500
+    props:
+      - asset: biomes/forest/campfire.svg
+        positions:
+          - { x: 550, y: 200, anim: "anim-blink" }
+  - threshold: 750
     props:
       - asset: biomes/forest/house.svg
         positions:
@@ -63,26 +90,28 @@ weather:
   clear:
     sky: "#87CEEB"
     ground: "#4a7c3f"
+    overlay: weather/sun.svg
   cloudy:
     sky: "#B0C4DE"
     ground: "#4a7c3f"
   rain:
     sky: "#708090"
     ground: "#3a5c2f"
-    overlay: weather/rain.svg
+    overlay: weather/rain2.svg
   storm:
     sky: "#2F4F4F"
     ground: "#2a4a2a"
-    overlay: weather/storm.svg
+    overlay: weather/rain2.svg
     lightning: true
   snow:
     sky: "#E0FFFF"
     ground: "#e0e0e0"
-    overlay: weather/snow.svg
+    overlay: weather/snowflake.svg
 
 # Clouds — shown for non-clear weather
 clouds:
-  asset: weather/cloud.svg
+  asset: weather/cloud_normal.svg
+  storm_asset: weather/cloud_storm.svg
   positions:
     - { x: 100, y: 20 }
     - { x: 400, y: 40 }
@@ -91,8 +120,12 @@ clouds:
 # Biome props — decorations placed in the scene
 biome:
   props:
-    - asset: biomes/forest/tree.svg
+    - asset: biomes/forest/tree_1.svg
       positions:
         - { x: 80, y: 168, anim: "anim-sway" }
         - { x: 350, y: 168, anim: "anim-sway" }
         - { x: 650, y: 168, anim: "anim-sway" }
+    - asset: biomes/forest/rock.svg
+      positions:
+        - { x: 300, y: 235 }
+        - { x: 720, y: 240 }

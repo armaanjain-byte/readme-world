@@ -188,7 +188,11 @@ def render_weather(manifest, weather):
     # Clouds for non-clear weather
     cloud_config = get_cloud_config(manifest)
     if weather != "clear" and cloud_config:
-        cloud_asset = cloud_config.get("asset", "")
+        # Use storm cloud asset for storm weather if available
+        if weather == "storm" and cloud_config.get("storm_asset"):
+            cloud_asset = cloud_config.get("storm_asset", "")
+        else:
+            cloud_asset = cloud_config.get("asset", "")
         base = os.path.splitext(os.path.basename(cloud_asset))[0]
         cloud_id = f"weather_{base}"
         anim = WEATHER_ANIMATIONS.get("cloud")
@@ -200,14 +204,20 @@ def render_weather(manifest, weather):
     if overlay_path:
         base = os.path.splitext(os.path.basename(overlay_path))[0]
         overlay_id = f"weather_{base}"
-        # Use rain animation for overlays
-        anim = WEATHER_ANIMATIONS.get("rain")
+        # Choose animation based on weather type
+        if weather == "snow":
+            anim = WEATHER_ANIMATIONS.get("snow")
+        else:
+            anim = WEATHER_ANIMATIONS.get("rain")
         elements.append(render_animated_asset(overlay_id, 0, 0, anim))
 
-    # Lightning flash
+    # Lightning flash — use lightning.svg asset if it exists, otherwise fallback to rect
     if has_lightning(manifest, weather):
         anim_lightning = WEATHER_ANIMATIONS.get("lightning")
-        elements.append(f'<rect x="0" y="0" width="800" height="300" fill="#ffffff" class="{anim_lightning}" pointer-events="none" />')
+        if os.path.exists("weather/lightning.svg"):
+            elements.append(render_animated_asset("weather_lightning", 350, 80, anim_lightning))
+        else:
+            elements.append(f'<rect x="0" y="0" width="800" height="300" fill="#ffffff" class="{anim_lightning}" pointer-events="none" />')
 
     return "\n".join(elements)
 
@@ -337,42 +347,60 @@ def generate_svg():
 
     # Load all SVG fragments referenced by the manifest
     fragments = []
+    loaded_ids = set()  # avoid duplicate defs
+
+    def _load_with_id(path):
+        """Load an SVG fragment, injecting the path-derived ID."""
+        base = os.path.splitext(os.path.basename(path))[0]
+        parent = os.path.basename(os.path.dirname(path))
+        tid = f"{parent}_{base}" if parent else base
+        if tid in loaded_ids:
+            return  # already loaded
+        loaded_ids.add(tid)
+        fragments.append(load_svg_fragment(path, target_id=tid))
 
     # Actor sprite
     sprite_path = get_sprite_path(manifest, mood)
     if os.path.exists(sprite_path):
-        fragments.append(load_svg_fragment(sprite_path))
+        _load_with_id(sprite_path)
 
     # Biome props
     for prop_def in get_biome_props(manifest):
         asset_path = prop_def.get("asset", "")
         if os.path.exists(asset_path):
-            fragments.append(load_svg_fragment(asset_path))
+            _load_with_id(asset_path)
             
     # Progression props
     friendship = pet_state.get("friendship", 0)
     for prop_def in get_progression_props(manifest, friendship):
         asset_path = prop_def.get("asset", "")
         if os.path.exists(asset_path):
-            fragments.append(load_svg_fragment(asset_path))
+            _load_with_id(asset_path)
 
-    # Cloud asset
+    # Cloud assets (normal + storm)
     cloud_config = get_cloud_config(manifest)
     cloud_asset = cloud_config.get("asset", "")
     if cloud_asset and os.path.exists(cloud_asset):
-        fragments.append(load_svg_fragment(cloud_asset))
+        _load_with_id(cloud_asset)
+    storm_cloud_asset = cloud_config.get("storm_asset", "")
+    if storm_cloud_asset and os.path.exists(storm_cloud_asset):
+        _load_with_id(storm_cloud_asset)
+
+    # Lightning asset
+    if os.path.exists("weather/lightning.svg"):
+        _load_with_id("weather/lightning.svg")
 
     # Weather overlay
     overlay_path = get_weather_overlay(manifest, weather)
     if overlay_path and os.path.exists(overlay_path):
-        fragments.append(load_svg_fragment(overlay_path))
+        _load_with_id(overlay_path)
         
     # Last Gift Asset
     last_gift = state.get("last_gift")
     if last_gift:
         gift_info = get_gift_asset(manifest, last_gift)
         if gift_info and os.path.exists(gift_info["asset"]):
-            fragments.append(load_svg_fragment(gift_info["asset"]))
+            _load_with_id(gift_info["asset"])
 
     defs = build_defs(*fragments)
 
