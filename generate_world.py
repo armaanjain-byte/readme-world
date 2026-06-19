@@ -404,7 +404,7 @@ def generate_svg():
 
     defs = build_defs(*fragments)
 
-    svg_open = '<svg width="100%" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" image-rendering="pixelated">'
+    svg_open = '<svg width="100%" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" shape-rendering="crispEdges" image-rendering="pixelated">'
     svg_close = '</svg>'
 
     content = "\n".join([
