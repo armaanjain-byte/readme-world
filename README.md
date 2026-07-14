@@ -1,5 +1,4 @@
 # readme-world
-Stagnant project the svg loads from output branch.
 A living world in your GitHub profile README. The pet changes based on visitor interactions.
 
 ![World](https://raw.githubusercontent.com/armaanjain-byte/readme-world/output/world.svg)
